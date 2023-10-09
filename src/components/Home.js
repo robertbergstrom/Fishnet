@@ -10,6 +10,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
 
 export default function FishList() {
   const [fishData, setFishData] = useState([]);
@@ -21,6 +22,9 @@ export default function FishList() {
   }, []);
 
   const fetchFishData = async () => {
+    const [loadedFonts] = useFonts({
+      Regular: require("../assets/fonts/Gabarito-VariableFont_wght.ttf"),
+    });
     try {
       let apiUrl = "https://fish-species.p.rapidapi.com/fish_api/fishes";
 
@@ -87,7 +91,7 @@ export default function FishList() {
       <FlatList
         data={fishData}
         renderItem={renderFishItem}
-        keyExtractor={(item) => item.id.toString()} // Replace 'id' with the actual unique key property
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );
@@ -108,8 +112,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 20, // Rounded corners for the left side of the search bar
-    overflow: "hidden", // Clip content outside the border
+    borderRadius: 20,
+    overflow: "hidden",
   },
   searchBarInput: {
     flex: 1,
@@ -125,6 +129,8 @@ const styles = StyleSheet.create({
   },
   searchBarButton: {
     padding: 10,
-    borderRadius: 20, // Rounded corners for the button
+  },
+  Text: {
+    fontFamily: "Regular",
   },
 });
