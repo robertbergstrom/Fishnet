@@ -6,7 +6,7 @@ const Profile = () => {
   const [isModalVisible, setModalVisible] = useState(false);
 
   return (
-    <View>
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Button title="Open Modal" onPress={() => setModalVisible(true)} />
 
       <Modal isVisible={isModalVisible} style={styles.modalContainer}>

@@ -8,6 +8,7 @@ import {
   TextInput,
   Button,
   StyleSheet,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
@@ -19,16 +20,12 @@ export default function FishList() {
   useEffect(() => {
     // Fetch data from the API
     fetchFishData();
-  }, []);
+  }, [searchTerm]);
 
   const fetchFishData = async () => {
-    const [loadedFonts] = useFonts({
-      Regular: require("../assets/fonts/Gabarito-VariableFont_wght.ttf"),
-    });
     try {
       let apiUrl = "https://fish-species.p.rapidapi.com/fish_api/fishes";
 
-      // If a search term is provided, modify the API URL accordingly
       if (searchTerm) {
         apiUrl = `https://fish-species.p.rapidapi.com/fish_api/fish/${encodeURIComponent(
           searchTerm
@@ -55,44 +52,50 @@ export default function FishList() {
     }
   };
 
+  const handleSearch = async () => {
+    await fetchFishData(); // Call fetchFishData to fetch data based on the search term
+  };
+
   const renderFishItem = ({ item }) => {
     return (
       <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
-        <View style={{ padding: 16 }}>
+        <View style={styles.listItem}>
           <Text>{item.name}</Text>
-          <Feather name="external-link" size={24} color="black" />
+          <View style={styles.wikiContainer}>
+            <Text style={styles.wikiText}>Wiki</Text>
+            <Feather name="external-link" size={24} color="black" />
+          </View>
         </View>
       </TouchableOpacity>
     );
   };
 
-  const handleSearch = async () => {
-    await fetchFishData();
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.searchBarContainer}>
-        <View style={styles.searchBarInputContainer}>
-          <TextInput
-            placeholder="Search by fish name"
-            style={styles.searchBarInput}
-            value={searchTerm}
-            onChangeText={(text) => setSearchTerm(text)}
-          />
-          <TouchableOpacity
-            onPress={handleSearch}
-            style={styles.searchBarButton}
-          >
-            <Feather name="search" size={20} color="#333" />
-          </TouchableOpacity>
-        </View>
-      </View>
       <FlatList
         data={fishData}
         renderItem={renderFishItem}
         keyExtractor={(item) => item.id.toString()}
+        style={{ marginTop: 40 }}
       />
+      <KeyboardAvoidingView behavior="padding">
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchBarInputContainer}>
+            <TextInput
+              placeholder="Search by fish name"
+              style={styles.searchBarInput}
+              value={searchTerm}
+              onChangeText={(text) => setSearchTerm(text)}
+            />
+            <TouchableOpacity
+              onPress={handleSearch}
+              style={styles.searchBarButton}
+            >
+              <Feather name="search" size={20} color="#333" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -101,6 +104,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    // marginTop: 40,
   },
   searchBarContainer: {
     flexDirection: "row",
@@ -114,6 +118,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 20,
     overflow: "hidden",
+    marginTop: 10,
   },
   searchBarInput: {
     flex: 1,
@@ -126,11 +131,22 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     marginBottom: 10,
     borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   searchBarButton: {
     padding: 10,
   },
   Text: {
     fontFamily: "Regular",
+  },
+  wikiContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
+  wikiText: {
+    fontWeight: "200",
   },
 });

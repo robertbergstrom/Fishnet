@@ -27,7 +27,7 @@ const Login = () => {
     try {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log(response);
-      alert("Check your email.");
+      alert("Successfully logged in.");
       navigation.navigate("Main");
     } catch (error) {
       console.log(error);
