@@ -6,10 +6,17 @@ import Friends from "./Friends";
 import Settings from "./Settings";
 import Map from "./Map";
 import { Feather } from "@expo/vector-icons";
+import { FIREBASE_AUTH } from "./firebase";
 
 const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
+  const auth = FIREBASE_AUTH;
+  const handleSignOut = () => {
+    // firebase.auth().signOut();
+    auth.signOut();
+  };
+
   return (
     <Tab.Navigator>
       <Tab.Screen
@@ -50,7 +57,7 @@ const BottomTabNavigator = () => {
       />
       <Tab.Screen
         name="Settings"
-        component={Settings}
+        component={() => <Settings onSignOut={handleSignOut} />}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Feather name="settings" size={24} color="black" />

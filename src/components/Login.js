@@ -1,5 +1,6 @@
 import {
   KeyboardAvoidingView,
+  ActivityIndicator,
   StyleSheet,
   Text,
   View,
@@ -7,13 +8,19 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from "firebase/auth";
 import { FIREBASE_AUTH } from "./firebase";
+import { useNavigation } from "@react-navigation/native";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
+  const navigation = useNavigation();
 
   const signIn = async () => {
     setLoading(true);
@@ -21,6 +28,7 @@ const Login = () => {
       const response = await signInWithEmailAndPassword(auth, email, password);
       console.log(response);
       alert("Check your email.");
+      navigation.navigate("Main");
     } catch (error) {
       console.log(error);
       alert("Sign in failed: " + error.message);
@@ -64,18 +72,23 @@ const Login = () => {
           secureTextEntry={true}
         />
       </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity onPress={signIn} style={styles.button}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={signUp}
-          style={[styles.button, styles.buttonOutline]}
-        >
-          <Text style={styles.buttonOutlineText}>Register</Text>
-        </TouchableOpacity>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity onPress={signIn} style={styles.button}>
+              <Text style={styles.buttonText}>Login</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={signUp}
+              style={[styles.button, styles.buttonOutline]}
+            >
+              <Text style={styles.buttonOutlineText}>Register</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </KeyboardAvoidingView>
   );
 };
