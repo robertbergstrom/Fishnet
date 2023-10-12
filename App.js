@@ -11,6 +11,7 @@ import Settings from "./src/components/Settings";
 import Map from "./src/components/Map";
 import { Feather } from "@expo/vector-icons";
 import { onAuthStateChanged } from "@firebase/auth";
+import ProfileNavigator from "./src/components/ProfileNavigator.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,12 +52,6 @@ export default App;
 const Tab = createBottomTabNavigator();
 
 function BottomTabNavigator() {
-  const auth = FIREBASE_AUTH;
-  const handleSignOut = () => {
-    // firebase.auth().signOut();
-    auth.signOut();
-  };
-
   return (
     <Tab.Navigator>
       <Tab.Screen
@@ -81,7 +76,7 @@ function BottomTabNavigator() {
       />
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Feather name="user" size={24} color="black" />
