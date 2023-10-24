@@ -1,118 +1,70 @@
-// EditUser.js
-import React, { useState } from "react";
-import { View, Text, Button, StyleSheet, TextInput } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { FIREBASE_AUTH } from "./firebase";
-import { RNCamera } from "react-native-camera";
-import ImageResizer from "react-native-image-resizer";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Button,
+  StyleSheet,
+  TextInput,
+  KeyboardAvoidingView,
+} from "react-native";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
+import ImageSelector from "./ImageSelector";
+import { doc, setDoc } from "firebase/firestore";
 
 const EditUser = () => {
-  const navigation = useNavigation();
   const [newUsername, setNewUsername] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const auth = FIREBASE_AUTH;
+  const user = auth.currentUser;
 
-  const CameraScreen = ({ onPictureTaken }) => {
-    const takePicture = async (camera) => {
-      if (camera) {
-        const options = { quality: 0.5, base64: true };
-        const data = await camera.takePictureAsync(options);
-        onPictureTaken(data.base64);
-      }
+  const handleSaveChanges = () => {
+    changePassword = (currentPassword, newPassword) => {
+      this.reauthenticate(currentPassword)
+        .then(() => {
+          var user = auth.currentUser;
+          user
+            .updatePassword(newPassword)
+            .then(() => {
+              console.log("Password updated!");
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     };
-
-    const resizeAndCompressImage = (
-      base64Image,
-      maxWidth,
-      maxHeight,
-      quality
-    ) => {
-      return new Promise((resolve, reject) => {
-        ImageResizer.createResizedImage(
-          `data:image/jpeg;base64,${base64Image}`,
-          maxWidth,
-          maxHeight,
-          "JPEG",
-          quality
-        )
-          .then((resizedImage) => {
-            resolve(resizedImage.uri);
-          })
-          .catch((error) => {
-            reject(error);
-          });
+    updateUsername = async () => {
+      await setDoc(doc(FIRESTORE_DB, "users", user.uid), {
+        UserName: newUsername,
       });
     };
-
-    const handleSaveChanges = () => {
-      // Get the current user
-      const user = auth.currentUser;
-
-      // Update the username
-      if (newUsername) {
-        user
-          .updateProfile({
-            displayName: newUsername,
-          })
-          .then(() => {
-            // Username updated successfully
-            auth.currentUser.updateProfile(update);
-          })
-          .catch((error) => {
-            console.error("Error updating username:", error);
-          });
-      }
-
-      // Update the password
-      if (newPassword) {
-        user
-          .updatePassword(newPassword)
-          .then(() => {
-            // Password updated successfully
-          })
-          .catch((error) => {
-            console.error("Error updating password:", error);
-          });
-
-        // Navigate back to the Profile screen
-        navigation.navigate("Profile");
-      }
-    };
-    return (
-      <View style={styles.container}>
-        <Text>Edit User Screen</Text>
-
-        <View style={{ flex: 1 }}>
-          <RNCamera
-            style={{ flex: 1 }}
-            type={RNCamera.Constants.Type.front}
-            captureAudio={false}
-          />
-          <Button
-            title="Take Picture"
-            onPress={() => takePicture(this.camera)}
-          />
-        </View>
-
-        <TextInput
-          placeholder="New Username"
-          value={newUsername}
-          onChangeText={(text) => setNewUsername(text)}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="New Password"
-          value={newPassword}
-          onChangeText={(text) => setNewPassword(text)}
-          secureTextEntry={true}
-          style={styles.input}
-        />
-        <Button title="Save Changes" onPress={handleSaveChanges} />
-      </View>
-    );
   };
+
+  return (
+    <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <ImageSelector />
+
+      <TextInput
+        placeholder="New Username"
+        value={newUsername}
+        onChangeText={(text) => setNewUsername(text)}
+        style={styles.input}
+      />
+      <TextInput
+        placeholder="New Password"
+        value={newPassword}
+        onChangeText={(text) => setNewPassword(text)}
+        secureTextEntry={true}
+        style={styles.input}
+      />
+      <Button title="Save Changes" onPress={handleSaveChanges} />
+    </KeyboardAvoidingView>
+  );
 };
+
 export default EditUser;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -121,10 +73,19 @@ const styles = StyleSheet.create({
   },
   input: {
     width: "80%",
-    marginBottom: 15,
+    height: 50,
+    marginVertical: 15,
     padding: 10,
     borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
+  },
+  cameraContainer: {
+    flex: 1,
+    flexDirection: "column",
+  },
+  fixedRatio: {
+    flex: 1,
+    aspectRatio: 1,
   },
 });

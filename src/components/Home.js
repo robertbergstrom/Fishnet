@@ -2,151 +2,207 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  FlatList,
   TouchableOpacity,
-  Linking,
-  TextInput,
-  Button,
-  StyleSheet,
   KeyboardAvoidingView,
+  ScrollView,
+  Image,
+  StyleSheet,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { Feather, Octicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
+import HomeHeader from "./HomeHeader";
 
-export default function FishList() {
-  const [fishData, setFishData] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+export default function Home() {
+  const navigation = useNavigation();
 
-  useEffect(() => {
-    // Fetch data from the API
-    fetchFishData();
-  }, [searchTerm]);
-
-  const fetchFishData = async () => {
-    try {
-      let apiUrl = "https://fish-species.p.rapidapi.com/fish_api/fishes";
-
-      if (searchTerm) {
-        apiUrl = `https://fish-species.p.rapidapi.com/fish_api/fish/${encodeURIComponent(
-          searchTerm
-        )}`;
-      }
-
-      const response = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          "X-RapidAPI-Key":
-            "0ad49bcb6bmshdaf367c5a5ebd11p11245bjsn823c5fc73385",
-          "X-RapidAPI-Host": "fish-species.p.rapidapi.com",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const data = await response.json();
-      setFishData(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+  const handleAddCatch = () => {
+    navigation.navigate("AddCatchScreen");
   };
 
-  const handleSearch = async () => {
-    await fetchFishData(); // Call fetchFishData to fetch data based on the search term
-  };
-
-  const renderFishItem = ({ item }) => {
-    return (
-      <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
-        <View style={styles.listItem}>
-          <Text>{item.name}</Text>
-          <View style={styles.wikiContainer}>
-            <Text style={styles.wikiText}>Wiki</Text>
-            <Feather name="external-link" size={24} color="black" />
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
+  const fishfacts = () => {
+    navigation.navigate("FishfactsScreen");
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={fishData}
-        renderItem={renderFishItem}
-        keyExtractor={(item) => item.id.toString()}
-        style={{ marginTop: 40 }}
-      />
-      <KeyboardAvoidingView behavior="padding">
-        <View style={styles.searchBarContainer}>
-          <View style={styles.searchBarInputContainer}>
-            <TextInput
-              placeholder="Search by fish name"
-              style={styles.searchBarInput}
-              value={searchTerm}
-              onChangeText={(text) => setSearchTerm(text)}
-            />
-            <TouchableOpacity
-              onPress={handleSearch}
-              style={styles.searchBarButton}
-            >
-              <Feather name="search" size={20} color="#333" />
+    <KeyboardAvoidingView style={styles.container}>
+      <HomeHeader />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity onPress={fishfacts} style={styles.button}>
+          <Text style={styles.buttonText}>Fish facts!</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.postButtonContainer}>
+        <TouchableOpacity onPress={handleAddCatch} style={styles.postButton}>
+          <Feather name="plus" size={24} color="#0782F9" />
+        </TouchableOpacity>
+      </View>
+      <View style={styles.searchButtonContainer}>
+        <TouchableOpacity
+          onPress={fishfacts}
+          style={[styles.button, styles.buttonOutline]}
+        >
+          <Text style={styles.buttonOutlineText}>Search</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={styles.feedContainer}>
+        {/* Loop through the firebase database for feed */}
+        <View style={styles.catchContainer}>
+          <View style={styles.catchHeader}>
+            <TouchableOpacity>
+              <View style={styles.imageAndUsernameContainer}>
+                <Image
+                  style={styles.userImage}
+                  src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                />
+                <Text style={styles.username}>Username</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Feather name="more-horizontal" size={24} color="black" />
             </TouchableOpacity>
           </View>
+          <Image
+            style={styles.catchImage}
+            src="https://images.pexels.com/photos/3793366/pexels-photo-3793366.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          />
+          <View style={styles.catchFooter}>
+            <TouchableOpacity>
+              <Text style={styles.username}>142 likes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.commentText}>19 comments</Text>
+            </TouchableOpacity>
+            <View style={styles.footerIcons}>
+              <TouchableOpacity>
+                <Octicons name="comment" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Feather name="heart" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Feather name="info" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-    // marginTop: 40,
-  },
-  searchBarContainer: {
-    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
-    marginBottom: 16,
   },
-  searchBarInputContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 20,
-    overflow: "hidden",
-    marginTop: 10,
-  },
-  searchBarInput: {
-    flex: 1,
+  buttonContainer: {
+    width: 90,
     height: 40,
-    paddingHorizontal: 10,
+    position: "absolute",
+    zIndex: 2,
+    bottom: "5%",
+    right: "10%",
   },
-  listItem: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    marginBottom: 10,
-    borderRadius: 10,
+  postButtonContainer: {
+    width: 70,
+    height: 70,
+    position: "absolute",
+    zIndex: 2,
+    bottom: "3%",
+  },
+  searchButtonContainer: {
+    width: 90,
+    height: 40,
+    position: "absolute",
+    zIndex: 2,
+    bottom: "5%",
+    left: "10%",
+  },
+  button: {
+    justifyContent: "center",
+    backgroundColor: "#0782F9",
+    width: "100%",
+    height: "100%",
+    borderRadius: 55,
+    alignItems: "center",
+  },
+  postButton: {
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    width: "100%",
+    height: "100%",
+    borderRadius: 55,
+    borderColor: "#0782F9",
+    borderWidth: 2,
+    alignItems: "center",
+  },
+  buttonOutline: {
+    backgroundColor: "white",
+    marginTop: 5,
+    borderColor: "#0782F9",
+    borderWidth: 2,
+  },
+  buttonText: {
+    textAlign: "center",
+    color: "white",
+    fontWeight: "500",
+    fontSize: 12,
+  },
+  buttonOutlineText: {
+    color: "#0782F9",
+    fontWeight: "500",
+    fontSize: 12,
+  },
+  feedContainer: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  catchContainer: {
+    width: "100%",
+    height: 360,
+    backgroundColor: "lightgrey",
+    borderTopWidth: 0.5,
+    borderTopColor: "grey",
+  },
+  catchHeader: {
+    backgroundColor: "white",
+    height: 55,
     flexDirection: "row",
     justifyContent: "space-between",
+    paddingHorizontal: 15,
     alignItems: "center",
   },
-  searchBarButton: {
-    padding: 10,
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
   },
-  Text: {
-    fontFamily: "Regular",
-  },
-  wikiContainer: {
+  imageAndUsernameContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 3,
+    gap: 10,
   },
-  wikiText: {
-    fontWeight: "200",
+  catchImage: {
+    width: "100%",
+    height: 250,
+  },
+  catchFooter: {
+    backgroundColor: "white",
+    height: 55,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    alignItems: "center",
+  },
+  footerIcons: {
+    flexDirection: "row",
+    gap: 20,
+  },
+  commentText: {
+    color: "grey",
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -6,44 +6,116 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  ScrollView,
 } from "react-native";
-import Modal from "react-native-modal";
-import { FIREBASE_AUTH } from "./firebase";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Octicons } from "@expo/vector-icons";
 
 const Profile = () => {
-  const [isModalVisible, setModalVisible] = useState(false);
   const auth = FIREBASE_AUTH;
-  const navigation = useNavigation();
+  const user = auth.currentUser;
+  const navigationProfile = useNavigation();
+  const [userInfo, setUserInfo] = useState(null);
+
+  const fetchData = async () => {
+    const userDocRef = doc(FIRESTORE_DB, "users", user.uid);
+    const userDocSnapshot = await getDoc(userDocRef);
+    if (userDocSnapshot.exists()) {
+      setUserInfo(userDocSnapshot.data());
+    } else {
+      alert("User document not found.");
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleEditUser = () => {
-    navigation.navigate("EditUser");
+    navigationProfile.navigate("EditUser");
+  };
+
+  const DisplayUsername = () => {
+    if (!userInfo?.UserName) {
+      return <Text>No username.</Text>;
+    }
+    return <Text>Username: {userInfo?.UserName}</Text>;
   };
 
   return (
     <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headingText}>Profile</Text>
+      </View>
       <View style={styles.profileCard}>
         <View style={styles.profileImageContainer}>
-          <Image style={styles.profileImage} />
+          {!user.photoURL ? (
+            <Image
+              style={styles.profileImage}
+              src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+            />
+          ) : (
+            <Image
+              style={styles.profileImage}
+              src={user.photoURL}
+              alt="Avatar"
+            />
+          )}
         </View>
         <View style={styles.profileDisplayText}>
-          <Text>{auth.currentUser.displayName}</Text>
-          <Text>{auth.currentUser.email}</Text>
+          <DisplayUsername />
+          <Text>{user.email}</Text>
         </View>
         <TouchableOpacity onPress={handleEditUser} style={styles.editButton}>
           <Feather name="edit" size={24} color="black" />
+          <Text>Edit Profile</Text>
         </TouchableOpacity>
       </View>
 
-      <Button title="Open Modal" onPress={() => setModalVisible(true)} />
-
-      <Modal isVisible={isModalVisible} style={styles.modalContainer}>
-        <View>
-          <Text>This is your modal content</Text>
-          <Button title="Close Modal" onPress={() => setModalVisible(false)} />
+      <ScrollView style={styles.feedContainer}>
+        {/* Loop through the firebase database for feed */}
+        <View style={styles.catchContainer}>
+          <View style={styles.catchHeader}>
+            <TouchableOpacity>
+              <View style={styles.imageAndUsernameContainer}>
+                <Image
+                  style={styles.userImage}
+                  src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                />
+                <Text style={styles.username}>Username</Text>
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Feather name="more-horizontal" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
+          <Image
+            style={styles.catchImage}
+            src="https://images.pexels.com/photos/3793366/pexels-photo-3793366.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+          />
+          <View style={styles.catchFooter}>
+            <TouchableOpacity>
+              <Text style={styles.username}>142 likes</Text>
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Text style={styles.commentText}>19 comments</Text>
+            </TouchableOpacity>
+            <View style={styles.footerIcons}>
+              <TouchableOpacity>
+                <Octicons name="comment" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Feather name="heart" size={24} color="black" />
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Feather name="info" size={24} color="black" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-      </Modal>
+      </ScrollView>
     </View>
   );
 };
@@ -52,6 +124,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "lightblue",
   },
   modalContainer: {
     backgroundColor: "white",
@@ -59,13 +132,14 @@ const styles = StyleSheet.create({
     marginVertical: 120,
   },
   profileCard: {
-    width: "90%",
-    height: 200,
+    width: "70%",
+    height: "40%",
+    backgroundColor: "white",
     borderWidth: 0.5,
     borderRadius: 30,
-    flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    marginVertical: 10,
     padding: 10,
   },
   profileImageContainer: {
@@ -74,10 +148,108 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 4,
-    borderRadius: 50,
-    width: 160,
-    height: 160,
+    borderRadius: 60,
+    marginTop: 10,
   },
-  profileImage: {},
+  profileImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 50,
+  },
+  editButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderRadius: 20,
+    padding: 7,
+  },
+  feedContainer: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+  catchContainer: {
+    width: "100%",
+    height: 360,
+    backgroundColor: "lightgrey",
+    borderTopWidth: 0.5,
+    borderTopColor: "grey",
+  },
+  catchHeader: {
+    backgroundColor: "white",
+    height: 55,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    alignItems: "center",
+  },
+  userImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
+  imageAndUsernameContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  catchImage: {
+    width: "100%",
+    height: 250,
+  },
+  catchFooter: {
+    backgroundColor: "white",
+    height: 55,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 15,
+    alignItems: "center",
+  },
+  footerIcons: {
+    flexDirection: "row",
+    gap: 20,
+  },
+  commentText: {
+    color: "grey",
+  },
+  headerContainer: {
+    height: 70,
+    width: "100%",
+    backgroundColor: "white",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "grey",
+  },
+  headingText: {
+    paddingBottom: 10,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  searchButtonContainer: {
+    width: 90,
+    height: 40,
+  },
+  button: {
+    justifyContent: "center",
+    backgroundColor: "#0782F9",
+    width: "100%",
+    height: "100%",
+    borderRadius: 55,
+    alignItems: "center",
+  },
+  buttonOutline: {
+    backgroundColor: "white",
+    // marginTop: 5,
+    borderColor: "#0782F9",
+    borderWidth: 2,
+  },
+  buttonOutlineText: {
+    color: "#0782F9",
+    fontWeight: "500",
+    fontSize: 12,
+  },
 });
 export default Profile;

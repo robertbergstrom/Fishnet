@@ -7,35 +7,44 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { FIREBASE_AUTH } from "./firebase";
+import React, { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
+import { doc, setDoc } from "firebase/firestore";
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const SignUp = () => {
+  const [newUsername, setNewUsername] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const auth = FIREBASE_AUTH;
   const navigation = useNavigation();
 
-  const handleRegister = () => {
-    navigation.navigate("SignUp");
-    console.log("Navigating to SignUp");
-  };
-
-  const signIn = async () => {
+  const register = async () => {
     setLoading(true);
     try {
-      const response = await signInWithEmailAndPassword(auth, email, password);
+      const response = await createUserWithEmailAndPassword(
+        auth,
+        newEmail,
+        newPassword
+      );
+      const user = response.user;
+      const userRef = doc(FIRESTORE_DB, "users", user.uid);
+      await setDoc(userRef, {
+        Email: newEmail,
+        UserId: user.uid,
+        UserName: newUsername,
+        phoneNumber: "",
+      });
       console.log(response);
-      alert("Successfully logged in.");
-      navigation.navigate("Main");
+      alert("Account successfully created.");
     } catch (error) {
       console.log(error);
-      alert("Sign in failed: " + error.message);
+      alert("Account creation failed: " + error.message);
     } finally {
       setLoading(false);
+      navigation.navigate("Login");
     }
   };
 
@@ -44,15 +53,21 @@ const Login = () => {
       <Text style={styles.logoText}>Fishnet</Text>
       <View style={styles.inputContainer}>
         <TextInput
+          placeholder="Username"
+          value={newUsername}
+          onChangeText={(text) => setNewUsername(text)}
+          style={styles.input}
+        />
+        <TextInput
           placeholder="Email"
-          value={email}
-          onChangeText={(text) => setEmail(text)}
+          value={newEmail}
+          onChangeText={(text) => setNewEmail(text)}
           style={styles.input}
         />
         <TextInput
           placeholder="Password"
-          value={password}
-          onChangeText={(text) => setPassword(text)}
+          value={newPassword}
+          onChangeText={(text) => setNewPassword(text)}
           style={styles.input}
           secureTextEntry={true}
         />
@@ -62,15 +77,18 @@ const Login = () => {
       ) : (
         <>
           <View style={styles.buttonContainer}>
-            <TouchableOpacity onPress={signIn} style={styles.button}>
-              <Text style={styles.buttonText}>Login</Text>
-            </TouchableOpacity>
-            <Text>No Account? Create one below</Text>
             <TouchableOpacity
-              onPress={handleRegister}
+              onPress={register}
               style={[styles.button, styles.buttonOutline]}
             >
-              <Text style={styles.buttonOutlineText}>Register</Text>
+              <Text style={styles.buttonOutlineText}>Create account</Text>
+            </TouchableOpacity>
+            <Text>Already have an account? Login below</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Login")}
+              style={[styles.button, styles.buttonOutline]}
+            >
+              <Text style={styles.buttonOutlineText}>Login</Text>
             </TouchableOpacity>
           </View>
         </>
@@ -79,7 +97,7 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default SignUp;
 
 const styles = StyleSheet.create({
   container: {

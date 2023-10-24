@@ -2,16 +2,15 @@ import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Login from "./src/components/Login.js";
 import { FIREBASE_AUTH } from "./src/components/firebase.js";
-import Home from "./src/components/Home.js";
-import Profile from "./src/components/Profile";
 import Friends from "./src/components/Friends";
 import Settings from "./src/components/Settings";
 import Map from "./src/components/Map";
 import { Feather } from "@expo/vector-icons";
 import { onAuthStateChanged } from "@firebase/auth";
-import ProfileNavigator from "./src/components/ProfileNavigator.js";
+import ProfileNavigator from "./src/navigation/ProfileNavigator.js";
+import HomeNavigator from "./src/navigation/HomeNavigator.js";
+import LoginNavigator from "./src/navigation/LoginNavigator.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,8 +36,8 @@ const App = () => {
           />
         ) : (
           <Stack.Screen
-            name="Login"
-            component={Login}
+            name="Account"
+            component={LoginNavigator}
             options={{ headerShown: false }}
           />
         )}
@@ -53,7 +52,7 @@ const Tab = createBottomTabNavigator();
 
 function BottomTabNavigator() {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator initialRouteName="Home">
       <Tab.Screen
         name="Map"
         component={Map}
@@ -75,21 +74,21 @@ function BottomTabNavigator() {
         }}
       />
       <Tab.Screen
-        name="Profile"
-        component={ProfileNavigator}
+        name="Home"
+        component={HomeNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Feather name="user" size={24} color="black" />
+            <Feather name="home" size={24} color="black" />
           ),
           headerShown: false,
         }}
       />
       <Tab.Screen
-        name="Home"
-        component={Home}
+        name="Profile"
+        component={ProfileNavigator}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Feather name="home" size={24} color="black" />
+            <Feather name="user" size={24} color="black" />
           ),
           headerShown: false,
         }}
