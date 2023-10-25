@@ -2,10 +2,11 @@ import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
-import { uploadProfileImage } from "./firebase";
+import { FIRESTORE_DB, uploadProfileImage } from "./firebase";
 import { getAuth } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 
-const ImageSelector = () => {
+const ImageSelector = ({ onImageSelected }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [loading, setLoading] = useState(false);
   const auth = getAuth();
@@ -40,7 +41,7 @@ const ImageSelector = () => {
       </View>
       <TouchableOpacity onPress={takeImageHandler} style={styles.cameraButton}>
         <Feather name="camera" size={24} color="black" />
-        <Text>New Profile Image</Text>
+        <Text>New profile photo</Text>
       </TouchableOpacity>
     </View>
   );

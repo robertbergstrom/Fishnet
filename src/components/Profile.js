@@ -32,17 +32,8 @@ const Profile = () => {
 
   useEffect(() => {
     fetchData();
-    // fetchUserCatches(user)
-    //   .then((catches) => {
-    //     setUserCatches(catches);
-    //   })
-    //   .catch((error) => {
-    //     console.log("Error fetching user catches: ", error);
-    //   });
-
     const q = query(collection(FIRESTORE_DB, "users", user.uid, "catches"));
 
-    // Attach a real-time listener to the query
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const catches = [];
       snapshot.forEach((doc) => {
@@ -52,7 +43,6 @@ const Profile = () => {
       setUserCatches(catches);
     });
 
-    // Clean up the listener when the component unmounts
     return () => {
       unsubscribe();
     };

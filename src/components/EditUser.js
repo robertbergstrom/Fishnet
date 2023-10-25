@@ -8,15 +8,7 @@ import {
 } from "react-native";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
 import ImageSelector from "./ImageSelector";
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  query,
-  setDoc,
-  where,
-} from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 
 const EditUser = ({ route }) => {
@@ -24,15 +16,21 @@ const EditUser = ({ route }) => {
   const [newFirstName, setNewFirstName] = useState(userInfo.FirstName);
   const [newLastName, setNewLastName] = useState(userInfo.LastName);
   const [newUsername, setNewUsername] = useState(userInfo.UserName);
+  const [imageUrl, setImageUrl] = useState(userInfo.ImageUrl);
   const auth = FIREBASE_AUTH;
   const user = auth.currentUser;
   const navigation = useNavigation();
+
+  const handleImageSelected = (url) => {
+    setImageUrl(url);
+  };
 
   const handleSaveChanges = () => {
     setDoc(doc(FIRESTORE_DB, "users", user.uid), {
       UserName: newUsername,
       FirstName: newFirstName,
       LastName: newLastName,
+      ImageUrl: user.photoURL,
     });
 
     userInfo.UserName = newUsername;

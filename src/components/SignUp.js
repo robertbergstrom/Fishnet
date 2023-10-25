@@ -35,7 +35,8 @@ const SignUp = () => {
         Email: newEmail,
         UserId: user.uid,
         UserName: newUsername,
-        phoneNumber: "",
+        PhoneNumber: "",
+        ImageUrl: "",
       });
       console.log(response);
       alert("Account successfully created.");

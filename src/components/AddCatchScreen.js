@@ -6,6 +6,8 @@ import {
   Button,
   Image,
   KeyboardAvoidingView,
+  StyleSheet,
+  TouchableOpacity,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
@@ -17,13 +19,13 @@ import {
   FIRESTORE_DB,
 } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
+import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AddCatchScreen = ({ userId }) => {
   const [image, setImage] = useState(null);
   const [fishType, setFishType] = useState("");
   const [length, setLength] = useState("");
   const [weight, setWeight] = useState("");
-  // const [datetime, setDatetime] = useState(Date);
   const auth = FIREBASE_AUTH;
   const user = auth.currentUser;
   const navigation = useNavigation();
@@ -125,32 +127,118 @@ const AddCatchScreen = ({ userId }) => {
   };
 
   return (
-    <KeyboardAvoidingView>
-      <Text>Post a catch</Text>
-      <Button title="Choose from Library" onPress={handleImagePick} />
-      <Button title="Take a Photo" onPress={handleCameraCapture} />
-
-      {image && (
-        <Image source={{ uri: image }} style={{ width: 200, height: 200 }} />
-      )}
-      <TextInput
-        placeholder="Fish Type"
-        value={fishType}
-        onChangeText={setFishType}
-      />
-      <TextInput
-        placeholder="Length in cm"
-        value={length}
-        onChangeText={setLength}
-      />
-      <TextInput
-        placeholder="Weight in kg"
-        value={weight}
-        onChangeText={setWeight}
-      />
-      <Button title="Post Catch" onPress={handleAddCatch} />
-    </KeyboardAvoidingView>
+    <View>
+      <View style={styles.headerContainer}>
+        <Text style={styles.headingText}>Post a new catch</Text>
+      </View>
+      <KeyboardAvoidingView
+        style={styles.postCatchContainer}
+        behavior="padding"
+      >
+        {image && (
+          <Image
+            source={{ uri: image }}
+            style={{ width: 240, height: 180, borderRadius: 10 }}
+          />
+        )}
+        <TouchableOpacity style={styles.button} onPress={handleImagePick}>
+          <Feather name="upload" size={24} color="black" />
+          <Text>Upload photo from library</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={handleCameraCapture}>
+          <Feather name="camera" size={24} color="black" />
+          <Text>Take photo</Text>
+        </TouchableOpacity>
+        <View style={styles.input}>
+          <MaterialCommunityIcons name="fish" size={24} color="grey" />
+          <TextInput
+            placeholder="Fishtype"
+            value={fishType}
+            onChangeText={setFishType}
+          />
+        </View>
+        <View style={styles.input}>
+          <MaterialCommunityIcons name="tape-measure" size={24} color="grey" />
+          <TextInput
+            placeholder="Length in cm"
+            value={length}
+            onChangeText={setLength}
+          />
+        </View>
+        <View style={styles.input}>
+          <MaterialCommunityIcons
+            name="weight-kilogram"
+            size={24}
+            color="grey"
+          />
+          <TextInput
+            placeholder="Weight in kg"
+            value={weight}
+            onChangeText={setWeight}
+          />
+        </View>
+        <TouchableOpacity style={styles.postButton} onPress={handleAddCatch}>
+          <Text style={{ color: "white" }}>Post catch!</Text>
+        </TouchableOpacity>
+      </KeyboardAvoidingView>
+    </View>
   );
 };
 
 export default AddCatchScreen;
+
+const styles = StyleSheet.create({
+  headerContainer: {
+    height: 70,
+    width: "100%",
+    backgroundColor: "white",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    borderBottomWidth: 0.5,
+    borderBottomColor: "grey",
+  },
+  headingText: {
+    paddingBottom: 10,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  postCatchContainer: {
+    width: "90%",
+    height: "90%",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 20,
+  },
+  button: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 7,
+    width: 230,
+    borderWidth: 2,
+    borderRadius: 10,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  postButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "blue",
+    width: 150,
+    height: 60,
+    borderWidth: 2,
+    borderColor: "white",
+    borderRadius: 15,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  input: {
+    flexDirection: "row",
+    gap: 7,
+    width: 230,
+    backgroundColor: "white",
+    padding: 10,
+    borderWidth: 2,
+    borderRadius: 10,
+  },
+});

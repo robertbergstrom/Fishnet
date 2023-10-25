@@ -12,9 +12,6 @@ import {
   query,
   where,
   setDoc,
-  updateDoc,
-  arrayUnion,
-  addDoc,
   doc,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
@@ -31,11 +28,6 @@ const firebaseConfig = {
   measurementId: "G-RGVEE8D4QF",
 };
 
-// Initialize Firebase
-// export const FIREBASE_APP = initializeApp(firebaseConfig);
-// export const FIREBASE_AUTH = initializeAuth(FIREBASE_APP, {
-//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-// });
 let FIREBASE_APP, FIREBASE_AUTH;
 
 if (!getApps().length) {
@@ -128,24 +120,3 @@ export async function getCatchesFromFirestore(userId) {
 
   return catches;
 }
-
-// Fetch catches from users subcollection
-// export async function fetchUserCatches(user) {
-//   try {
-//     const catchesRef = collection(FIRESTORE_DB, "users", user.uid, "catches");
-//     const q = query(catchesRef);
-
-//     // Fetch all catches in the user's "catches" subcollection
-//     const querySnapshot = await getDocs(q);
-
-//     const userCatches = [];
-//     querySnapshot.forEach((doc) => {
-//       userCatches.push(doc.data());
-//     });
-
-//     return userCatches;
-//   } catch (error) {
-//     console.error("Error fetching user catches: ", error);
-//     return null;
-//   }
-// }

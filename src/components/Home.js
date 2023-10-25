@@ -24,6 +24,10 @@ export default function Home() {
     navigation.navigate("FishfactsScreen");
   };
 
+  const explore = () => {
+    navigation.navigate("ExploreScreen");
+  };
+
   return (
     <KeyboardAvoidingView style={styles.container}>
       <HomeHeader />
@@ -38,7 +42,7 @@ export default function Home() {
         </TouchableOpacity>
       </View>
       <View style={styles.searchButtonContainer}>
-        <TouchableOpacity onPress={fishfacts} style={styles.button}>
+        <TouchableOpacity onPress={explore} style={styles.button}>
           <Text style={styles.buttonText}>Explore</Text>
         </TouchableOpacity>
       </View>

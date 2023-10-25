@@ -102,12 +102,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    // marginTop: 40,
   },
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 16,
   },
   searchBarInputContainer: {
     flexDirection: "row",
