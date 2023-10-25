@@ -8,8 +8,8 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB, fetchUserCatches } from "./firebase";
+import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Octicons } from "@expo/vector-icons";
 
@@ -18,6 +18,7 @@ const Profile = () => {
   const user = auth.currentUser;
   const navigationProfile = useNavigation();
   const [userInfo, setUserInfo] = useState(null);
+  const [userCatches, setUserCatches] = useState([]);
 
   const fetchData = async () => {
     const userDocRef = doc(FIRESTORE_DB, "users", user.uid);
@@ -31,17 +32,51 @@ const Profile = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+    // fetchUserCatches(user)
+    //   .then((catches) => {
+    //     setUserCatches(catches);
+    //   })
+    //   .catch((error) => {
+    //     console.log("Error fetching user catches: ", error);
+    //   });
+
+    const q = query(collection(FIRESTORE_DB, "users", user.uid, "catches"));
+
+    // Attach a real-time listener to the query
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const catches = [];
+      snapshot.forEach((doc) => {
+        catches.push(doc.data());
+      });
+
+      setUserCatches(catches);
+    });
+
+    // Clean up the listener when the component unmounts
+    return () => {
+      unsubscribe();
+    };
+  }, [user]);
 
   const handleEditUser = () => {
-    navigationProfile.navigate("EditUser");
+    navigationProfile.navigate("EditUser", {
+      userInfo,
+      handleSaveChanges: (newUserName, newFirstName, newLastName) => {
+        setUserInfo({
+          ...userInfo,
+          UserName: newUserName,
+          FirstName: newFirstName,
+          LastName: newLastName,
+        });
+      },
+    });
   };
 
   const DisplayUsername = () => {
     if (!userInfo?.UserName) {
       return <Text>No username.</Text>;
     }
-    return <Text>Username: {userInfo?.UserName}</Text>;
+    return <Text>{userInfo?.UserName}</Text>;
   };
 
   return (
@@ -50,23 +85,42 @@ const Profile = () => {
         <Text style={styles.headingText}>Profile</Text>
       </View>
       <View style={styles.profileCard}>
-        <View style={styles.profileImageContainer}>
-          {!user.photoURL ? (
-            <Image
-              style={styles.profileImage}
-              src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-            />
-          ) : (
-            <Image
-              style={styles.profileImage}
-              src={user.photoURL}
-              alt="Avatar"
-            />
-          )}
+        <View style={styles.userInfo}>
+          <View style={styles.profileImageContainer}>
+            {!user.photoURL ? (
+              <Image
+                style={styles.profileImage}
+                src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+              />
+            ) : (
+              <Image
+                style={styles.profileImage}
+                src={user.photoURL}
+                alt="Avatar"
+              />
+            )}
+          </View>
+          <View style={styles.profileDisplayText}>
+            <DisplayUsername />
+            <Text>{user.email}</Text>
+            <Text>
+              {userInfo?.FirstName} {userInfo?.LastName}
+            </Text>
+          </View>
         </View>
-        <View style={styles.profileDisplayText}>
-          <DisplayUsername />
-          <Text>{user.email}</Text>
+        <View style={styles.catchesContainer}>
+          <View style={styles.catchesBox}>
+            <Text>Catches</Text>
+            <Text>{userCatches.length}</Text>
+          </View>
+          <View style={styles.catchesBox}>
+            <Text>Followers</Text>
+            <Text>12392</Text>
+          </View>
+          <View style={styles.catchesBox}>
+            <Text>Following</Text>
+            <Text>322</Text>
+          </View>
         </View>
         <TouchableOpacity onPress={handleEditUser} style={styles.editButton}>
           <Feather name="edit" size={24} color="black" />
@@ -132,7 +186,7 @@ const styles = StyleSheet.create({
     marginVertical: 120,
   },
   profileCard: {
-    width: "70%",
+    width: "80%",
     height: "40%",
     backgroundColor: "white",
     borderWidth: 0.5,
@@ -141,6 +195,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     padding: 10,
+  },
+  userInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   profileImageContainer: {
     elevation: 5,
@@ -242,7 +301,6 @@ const styles = StyleSheet.create({
   },
   buttonOutline: {
     backgroundColor: "white",
-    // marginTop: 5,
     borderColor: "#0782F9",
     borderWidth: 2,
   },
@@ -250,6 +308,19 @@ const styles = StyleSheet.create({
     color: "#0782F9",
     fontWeight: "500",
     fontSize: 12,
+  },
+  catchesContainer: {
+    width: "100%",
+    justifyContent: "space-evenly",
+    flexDirection: "row",
+  },
+  catchesBox: {
+    width: 80,
+    height: 60,
+    borderWidth: 1,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "space-evenly",
   },
 });
 export default Profile;

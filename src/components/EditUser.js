@@ -8,56 +8,90 @@ import {
 } from "react-native";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
 import ImageSelector from "./ImageSelector";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
+import { useNavigation } from "@react-navigation/native";
 
-const EditUser = () => {
-  const [newUsername, setNewUsername] = useState("");
-  const [newPassword, setNewPassword] = useState("");
+const EditUser = ({ route }) => {
+  const { userInfo } = route.params;
+  const [newFirstName, setNewFirstName] = useState(userInfo.FirstName);
+  const [newLastName, setNewLastName] = useState(userInfo.LastName);
+  const [newUsername, setNewUsername] = useState(userInfo.UserName);
   const auth = FIREBASE_AUTH;
   const user = auth.currentUser;
+  const navigation = useNavigation();
 
   const handleSaveChanges = () => {
-    changePassword = (currentPassword, newPassword) => {
-      this.reauthenticate(currentPassword)
-        .then(() => {
-          var user = auth.currentUser;
-          user
-            .updatePassword(newPassword)
-            .then(() => {
-              console.log("Password updated!");
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    };
-    updateUsername = async () => {
-      await setDoc(doc(FIRESTORE_DB, "users", user.uid), {
-        UserName: newUsername,
-      });
-    };
+    setDoc(doc(FIRESTORE_DB, "users", user.uid), {
+      UserName: newUsername,
+      FirstName: newFirstName,
+      LastName: newLastName,
+    });
+
+    userInfo.UserName = newUsername;
+    userInfo.FirstName = newFirstName;
+    userInfo.LastName = newLastName;
+
+    alert("Profile updated.");
+    navigation.navigate("ProfileScreen");
   };
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <ImageSelector />
+      {!userInfo.UserName ? (
+        <TextInput
+          placeholder="New Username"
+          value={newUsername}
+          onChangeText={(text) => setNewUsername(text)}
+          style={styles.input}
+        />
+      ) : (
+        <TextInput
+          placeholder={userInfo.UserName}
+          value={newUsername}
+          onChangeText={(text) => setNewUsername(text)}
+          style={styles.input}
+        />
+      )}
+      {!userInfo.FirstName ? (
+        <TextInput
+          placeholder="New Firstname"
+          value={newFirstName}
+          onChangeText={(text) => setNewFirstName(text)}
+          style={styles.input}
+        />
+      ) : (
+        <TextInput
+          placeholder={userInfo.UserName}
+          value={newFirstName}
+          onChangeText={(text) => setNewFirstName(text)}
+          style={styles.input}
+        />
+      )}
+      {!userInfo.LastName ? (
+        <TextInput
+          placeholder="New Lastname"
+          value={newLastName}
+          onChangeText={(text) => setNewLastName(text)}
+          style={styles.input}
+        />
+      ) : (
+        <TextInput
+          placeholder={userInfo.UserName}
+          value={newLastName}
+          onChangeText={(text) => setNewLastName(text)}
+          style={styles.input}
+        />
+      )}
 
-      <TextInput
-        placeholder="New Username"
-        value={newUsername}
-        onChangeText={(text) => setNewUsername(text)}
-        style={styles.input}
-      />
-      <TextInput
-        placeholder="New Password"
-        value={newPassword}
-        onChangeText={(text) => setNewPassword(text)}
-        secureTextEntry={true}
-        style={styles.input}
-      />
       <Button title="Save Changes" onPress={handleSaveChanges} />
     </KeyboardAvoidingView>
   );

@@ -6,16 +6,20 @@ import {
   initializeAuth,
 } from "firebase/auth";
 import {
-  addDoc,
   collection,
   getDocs,
   getFirestore,
   query,
   where,
   setDoc,
+  updateDoc,
+  arrayUnion,
+  addDoc,
+  doc,
 } from "firebase/firestore";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import uuid from "react-native-uuid";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB7L2oaiuNB6iIML6DibX2jkUNTgDpGexU",
@@ -52,7 +56,7 @@ export const FIREBASE_STORAGE = getStorage(FIREBASE_APP);
 export const FIRESTORE_DB = getFirestore(FIREBASE_APP);
 
 // Storage functionality
-export async function upload(file, user, setLoading) {
+export async function uploadProfileImage(file, user, setLoading) {
   const imagesRef = ref(FIREBASE_STORAGE, "images/" + user.uid + ".png");
   await uploadBytes(imagesRef, file).then((snapshot) => {
     console.log("Uploaded a blob or file!");
@@ -61,7 +65,6 @@ export async function upload(file, user, setLoading) {
   const imageURL = await getDownloadURL(imagesRef);
   const auth = getAuth();
   try {
-    // updateProfile(user, { photoURL: imageURL });
     updateProfile(auth.currentUser, {
       photoURL: imageURL,
     });
@@ -73,12 +76,20 @@ export async function upload(file, user, setLoading) {
 }
 
 // Function to add a new catch to Firestore
-export async function addCatchToFirestore(catchData) {
+export async function addCatchToFirestore(catchData, user) {
+  const newCatchRefId = uuid.v4();
   try {
-    const catchRef = await setDoc(doc(FIRESTORE_DB, "catches"), catchData);
-    return catchRef.id;
+    const catchRef = doc(
+      FIRESTORE_DB,
+      "users",
+      user.uid,
+      "catches",
+      newCatchRefId
+    );
+    await setDoc(catchRef, catchData);
+    return newCatchRefId;
   } catch (error) {
-    console.error("Error adding catch: ", error);
+    alert("Error adding catch: " + error.message);
     return null;
   }
 }
@@ -116,4 +127,25 @@ export async function getCatchesFromFirestore(userId) {
   });
 
   return catches;
+}
+
+// Fetch catches from users subcollection
+export async function fetchUserCatches(user) {
+  try {
+    const catchesRef = collection(FIRESTORE_DB, "users", user.uid, "catches");
+    const q = query(catchesRef);
+
+    // Fetch all catches in the user's "catches" subcollection
+    const querySnapshot = await getDocs(q);
+
+    const userCatches = [];
+    querySnapshot.forEach((doc) => {
+      userCatches.push(doc.data());
+    });
+
+    return userCatches;
+  } catch (error) {
+    console.error("Error fetching user catches: ", error);
+    return null;
+  }
 }

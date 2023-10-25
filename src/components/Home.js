@@ -29,7 +29,7 @@ export default function Home() {
       <HomeHeader />
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={fishfacts} style={styles.button}>
-          <Text style={styles.buttonText}>Fish facts!</Text>
+          <Text style={styles.buttonText}>Fish facts</Text>
         </TouchableOpacity>
       </View>
       <View style={styles.postButtonContainer}>
@@ -38,11 +38,8 @@ export default function Home() {
         </TouchableOpacity>
       </View>
       <View style={styles.searchButtonContainer}>
-        <TouchableOpacity
-          onPress={fishfacts}
-          style={[styles.button, styles.buttonOutline]}
-        >
-          <Text style={styles.buttonOutlineText}>Search</Text>
+        <TouchableOpacity onPress={fishfacts} style={styles.button}>
+          <Text style={styles.buttonText}>Explore</Text>
         </TouchableOpacity>
       </View>
 

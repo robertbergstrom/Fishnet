@@ -97,23 +97,31 @@ const AddCatchScreen = ({ userId }) => {
   };
 
   const handleAddCatch = async () => {
-    // First, upload the image to Firebase Storage and get the download URL
-    const imageUrl = await uploadCatchImage(user.uid, image);
+    try {
+      // First, upload the image to Firebase Storage and get the download URL
+      const imageUrl = await uploadCatchImage(user.uid, image);
 
-    // Then, add catch data to Firestore
-    const catchData = {
-      FishType: fishType,
-      Length: length,
-      Weight: weight,
-      ImageUrl: imageUrl,
-      UserId: user.uid,
-      Location: new FIREBASE_APP.FIRESTORE_DB.GeoPoint(latitude, longitude),
-      // Other catch data fields here
-    };
+      // Then, add catch data to Firestore
+      const catchData = {
+        FishType: fishType,
+        Length: length,
+        Weight: weight,
+        ImageUrl: imageUrl,
+        UserId: user.uid,
+        // Location: new FIREBASE_APP.FIRESTORE_DB.GeoPoint(latitude, longitude),
+      };
 
-    addCatchToFirestore(catchData);
-    alert("Catch posted!");
-    navigation.navigate("ProfileScreen");
+      const catchRefId = await addCatchToFirestore(catchData, user);
+      if (catchRefId) {
+        alert("Catch posted!");
+        navigation.navigate("HomeScreen");
+      } else {
+        alert("Catch upload failed!!!!");
+      }
+    } catch (error) {
+      console.error("Error adding catch: ", error);
+      alert("Catch upload failed: ", error.message);
+    }
   };
 
   return (

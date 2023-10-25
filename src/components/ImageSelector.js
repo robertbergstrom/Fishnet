@@ -1,10 +1,4 @@
-import {
-  StyleSheet,
-  View,
-  Image,
-  TouchableOpacity,
-  Button,
-} from "react-native";
+import { StyleSheet, View, Image, TouchableOpacity, Text } from "react-native";
 import React, { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
@@ -44,11 +38,9 @@ const ImageSelector = () => {
           <Image style={styles.image} src={user.photoURL} />
         )}
       </View>
-      <TouchableOpacity
-        // disabled={loading || !selectedImage}
-        onPress={takeImageHandler}
-      >
+      <TouchableOpacity onPress={takeImageHandler} style={styles.cameraButton}>
         <Feather name="camera" size={24} color="black" />
+        <Text>New Profile Image</Text>
       </TouchableOpacity>
     </View>
   );
@@ -74,5 +66,15 @@ const styles = StyleSheet.create({
     height: "100%",
     width: "100%",
     borderRadius: 50,
+  },
+  cameraButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    marginBottom: 20,
+    borderWidth: 2,
+    borderRadius: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 9,
   },
 });
