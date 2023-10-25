@@ -130,22 +130,22 @@ export async function getCatchesFromFirestore(userId) {
 }
 
 // Fetch catches from users subcollection
-export async function fetchUserCatches(user) {
-  try {
-    const catchesRef = collection(FIRESTORE_DB, "users", user.uid, "catches");
-    const q = query(catchesRef);
+// export async function fetchUserCatches(user) {
+//   try {
+//     const catchesRef = collection(FIRESTORE_DB, "users", user.uid, "catches");
+//     const q = query(catchesRef);
 
-    // Fetch all catches in the user's "catches" subcollection
-    const querySnapshot = await getDocs(q);
+//     // Fetch all catches in the user's "catches" subcollection
+//     const querySnapshot = await getDocs(q);
 
-    const userCatches = [];
-    querySnapshot.forEach((doc) => {
-      userCatches.push(doc.data());
-    });
+//     const userCatches = [];
+//     querySnapshot.forEach((doc) => {
+//       userCatches.push(doc.data());
+//     });
 
-    return userCatches;
-  } catch (error) {
-    console.error("Error fetching user catches: ", error);
-    return null;
-  }
-}
+//     return userCatches;
+//   } catch (error) {
+//     console.error("Error fetching user catches: ", error);
+//     return null;
+//   }
+// }
