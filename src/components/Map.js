@@ -20,32 +20,6 @@ function Map() {
   const [endCoordinates, setEndCoordinates] = useState(null);
   const [searchBarOpacity, setSearchBarOpacity] = useState(0.5);
 
-  const handleSearch = async () => {
-    const apiKey = "5b3ce3597851110001cf6248a98dbd84f5af43028e141b91b5ee4f2f";
-
-    try {
-      const response = await axios.get(
-        `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${startLocation}&end=${endLocation}`
-      );
-
-      const directions = response.data;
-      if (directions.features.length > 0) {
-        setRoute(directions.features[0].geometry.coordinates);
-        setIsSearchSubmitted(true);
-
-        // Set the coordinates for the starting and ending locations
-        setStartCoordinates(directions.features[0].geometry.coordinates[0]);
-        setEndCoordinates(
-          directions.features[0].geometry.coordinates[
-            directions.features[0].geometry.coordinates.length - 1
-          ]
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching directions:", error);
-    }
-  };
-
   return (
     <View style={{ flex: 1 }}>
       <MapView style={{ flex: isSearchSubmitted ? 0.7 : 1 }}>
