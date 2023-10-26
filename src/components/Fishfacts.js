@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 
 export default function FishList() {
   const [fishData, setFishData] = useState([]);
@@ -70,6 +71,7 @@ export default function FishList() {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       <FlatList
         data={fishData}
         renderItem={renderFishItem}

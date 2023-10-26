@@ -12,6 +12,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Feather, Octicons } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import HomeHeader from "./HomeHeader";
+import { StatusBar } from "expo-status-bar";
 
 export default function Home() {
   const navigation = useNavigation();
@@ -30,6 +31,7 @@ export default function Home() {
 
   return (
     <KeyboardAvoidingView style={styles.container}>
+      <StatusBar style="auto" />
       <HomeHeader />
       <View style={styles.buttonContainer}>
         <TouchableOpacity onPress={fishfacts} style={styles.button}>

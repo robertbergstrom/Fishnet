@@ -126,26 +126,26 @@ export const addFollower = async (currentUser, followingUserId) => {
   const followingUserRef = doc(FIRESTORE_DB, "users", followingUserId);
   const followersCollection = collection(followingUserRef, "Followers");
   const followerUserRef = doc(followersCollection, currentUser.uid);
-  await setDoc(followerUserRef, { Follows: true });
+  await setDoc(followerUserRef, {});
 };
 
 export const addFollowing = async (currentUser, followerUserId) => {
   const currentUserRef = doc(FIRESTORE_DB, "users", currentUser.uid);
   const followingCollection = collection(currentUserRef, "Following");
   const followingUserRef = doc(followingCollection, followerUserId);
-  await setDoc(followingUserRef, { Follows: true });
+  await setDoc(followingUserRef, {});
 };
 
 export const checkIfUserIsFollowing = async (currentUser, userId) => {
-  const followingRef = collection(
-    FIRESTORE_DB,
-    "users",
-    currentUser.uid,
-    "Following"
-  );
-  const followingQuery = query(followingRef);
-
   try {
+    const followingRef = collection(
+      FIRESTORE_DB,
+      "users",
+      currentUser.uid,
+      "Following"
+    );
+    const followingQuery = query(followingRef);
+
     const followingSnapshot = await getDocs(followingQuery);
     return (
       !followingSnapshot.empty &&

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   Image,
   KeyboardAvoidingView,
   StyleSheet,
@@ -20,6 +19,7 @@ import {
 } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 
 const AddCatchScreen = ({ userId }) => {
   const [image, setImage] = useState(null);
@@ -128,6 +128,7 @@ const AddCatchScreen = ({ userId }) => {
 
   return (
     <View>
+      <StatusBar style="auto" />
       <View style={styles.headerContainer}>
         <Text style={styles.headingText}>Post a new catch</Text>
       </View>

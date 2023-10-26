@@ -11,6 +11,7 @@ import React, { useEffect, useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -41,6 +42,7 @@ const Login = () => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <StatusBar style="auto" />
       <Text style={styles.logoText}>Fishnet</Text>
       <View style={styles.inputContainer}>
         <TextInput

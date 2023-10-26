@@ -4,7 +4,6 @@ import * as ImagePicker from "expo-image-picker";
 import { Feather } from "@expo/vector-icons";
 import { FIRESTORE_DB, uploadProfileImage } from "./firebase";
 import { getAuth } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
 
 const ImageSelector = ({ onImageSelected }) => {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -41,7 +40,7 @@ const ImageSelector = ({ onImageSelected }) => {
       </View>
       <TouchableOpacity onPress={takeImageHandler} style={styles.cameraButton}>
         <Feather name="camera" size={24} color="black" />
-        <Text>New profile photo</Text>
+        <Text>Profile photo</Text>
       </TouchableOpacity>
     </View>
   );

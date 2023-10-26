@@ -12,6 +12,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB, fetchUserCatches } from "./firebase";
 import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Octicons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 
 const Profile = () => {
   const auth = FIREBASE_AUTH;
@@ -71,6 +72,7 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       <View style={styles.headerContainer}>
         <Text style={styles.headingText}>Profile</Text>
       </View>

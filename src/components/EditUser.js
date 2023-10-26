@@ -10,6 +10,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
 import ImageSelector from "./ImageSelector";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
+import { StatusBar } from "expo-status-bar";
 
 const EditUser = ({ route }) => {
   const { userInfo } = route.params;
@@ -43,6 +44,7 @@ const EditUser = ({ route }) => {
 
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
+      <StatusBar style="auto" />
       <ImageSelector />
       {!userInfo.UserName ? (
         <TextInput

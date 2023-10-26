@@ -11,6 +11,7 @@ import { FIREBASE_AUTH } from "./firebase";
 import { deleteUser } from "firebase/auth";
 import Modal from "react-native-modal";
 import { Feather } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
 
 const Settings = () => {
   const auth = FIREBASE_AUTH;
@@ -19,6 +20,7 @@ const Settings = () => {
 
   return (
     <View style={styles.container}>
+      <StatusBar style="auto" />
       <Text>Settings Screen</Text>
       <Button title="Sign Out" onPress={() => auth.signOut()} />
       <Button title="Delete Account" onPress={() => setModalVisible(true)} />

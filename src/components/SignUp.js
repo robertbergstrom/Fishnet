@@ -12,6 +12,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
 import { doc, setDoc } from "firebase/firestore";
+import { StatusBar } from "expo-status-bar";
 
 const SignUp = () => {
   const [newUsername, setNewUsername] = useState("");
@@ -51,6 +52,7 @@ const SignUp = () => {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior="padding">
+      <StatusBar style="auto" />
       <Text style={styles.logoText}>Fishnet</Text>
       <View style={styles.inputContainer}>
         <TextInput
