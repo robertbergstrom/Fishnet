@@ -63,7 +63,7 @@ function Map() {
           value={endLocation}
           onChangeText={setEndLocation}
         />
-        <TouchableOpacity onPress={handleSearch} style={styles.searchBarButton}>
+        <TouchableOpacity onPress={() => {}} style={styles.searchBarButton}>
           <Feather name="search" size={20} color="#333" />
         </TouchableOpacity>
       </KeyboardAvoidingView>

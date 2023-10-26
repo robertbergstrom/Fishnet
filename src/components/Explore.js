@@ -19,6 +19,7 @@ import {
   getDocs,
   writeBatch,
   doc,
+  deleteDoc,
 } from "firebase/firestore";
 import {
   FIRESTORE_DB,
@@ -34,8 +35,8 @@ import { StatusBar } from "expo-status-bar";
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [followingStatus, setFollowingStatus] = useState({});
-  const currentUser = getAuth().currentUser;
+  const [following, setFollowing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Searchterm handling
   useEffect(() => {
@@ -64,7 +65,10 @@ const Explore = () => {
           results.push({ ...userData, catchCount });
         }
         console.log("Fetched users:", results);
+        setLoading(true);
         setSearchResults(results);
+        console.log("Search results:", searchResults);
+        setLoading(false);
       });
 
       return () => {
@@ -75,59 +79,41 @@ const Explore = () => {
     }
   }, [searchTerm]);
 
-  // Check isFollowed
-  useEffect(() => {
-    const currentUser = getAuth().currentUser;
-
-    if (currentUser) {
-      const currentUserId = currentUser.uid;
-      const resultsWithFollowStatus = [...searchResults]; // Copy the existing search results
-
-      (async () => {
-        for (const user of searchResults) {
-          const followingRef = doc(
-            FIRESTORE_DB,
-            "users",
-            currentUserId,
-            "following",
-            user.id
-          );
-          const followingDoc = await getDoc(followingRef);
-          const isFollowing = followingDoc.exists;
-          // Find the corresponding user in resultsWithFollowStatus and update isFollowing
-          const updatedUser = resultsWithFollowStatus.find(
-            (resultUser) => resultUser.id === user.id
-          );
-          if (updatedUser) {
-            updatedUser.isFollowing = isFollowing;
-          }
-        }
-
-        setSearchResults(resultsWithFollowStatus);
-      })();
-    }
-  }, [searchResults]);
-
-  const handleFollowUser = async (followedUserId) => {
-    try {
-      const isFollowing = checkIfUserIsFollowing(currentUser, followedUserId);
-
-      if (isFollowing) {
-        await removeFollowing(currentUser, followedUserId);
-        await removeFollower(followedUserId, currentUser.uid);
-      } else {
-        await addFollower(currentUser, followedUserId);
-        await addFollowing(currentUser, followedUserId);
-      }
-
-      // Update followingStatus state to reflect the change
-      setFollowingStatus((prevFollowingStatus) => ({
-        ...prevFollowingStatus,
-        [followedUserId]: { isFollowing: !isFollowing },
-      }));
-    } catch (error) {
-      console.error("Error following/unfollowing user:", error);
-    }
+  const onFollow = async (followUserId) => {
+    const followsRef = doc(
+      FIRESTORE_DB,
+      "users",
+      getAuth().currentUser.uid,
+      "following",
+      followUserId
+    );
+    const followedRef = doc(
+      FIRESTORE_DB,
+      "users",
+      followUserId,
+      "followers",
+      getAuth().currentUser.uid
+    );
+    await setDoc(followsRef);
+    await setDoc(followedRef);
+  };
+  const onUnfollow = async (unfollowUserId) => {
+    const unfollowsRef = doc(
+      FIRESTORE_DB,
+      "users",
+      getAuth().currentUser.uid,
+      "following",
+      unfollowUserId
+    );
+    const unfollowedRef = doc(
+      FIRESTORE_DB,
+      "users",
+      unfollowUserId,
+      "followers",
+      getAuth().currentUser.uid
+    );
+    await deleteDoc(unfollowsRef);
+    await deleteDoc(unfollowedRef);
   };
 
   return (
@@ -139,34 +125,37 @@ const Explore = () => {
       <FlatList
         data={searchTerm ? searchResults : []}
         keyExtractor={(item) => item.UserId}
-        renderItem={({ item }) => {
-          const isFollowing =
-            followingStatus[item.UserId]?.isFollowing || false;
-
-          return (
-            <View style={styles.profileCard}>
-              <Image
-                source={{ uri: item.ImageUrl }}
-                style={styles.profileImage}
-              />
-              <View style={styles.userInfo}>
-                <Text>{item.UserName}</Text>
-                <Text>Catches: {item.catchCount}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.followButton}
-                onPress={() => handleFollowUser(item.UserId)}
-              >
-                <Feather
-                  name={isFollowing ? "user-minus" : "user-plus"}
-                  size={20}
-                  color="#333"
-                />
-                <Text>{isFollowing ? "Unfollow" : "Follow"}</Text>
-              </TouchableOpacity>
+        renderItem={({ item }) => (
+          <View style={styles.profileCard}>
+            <Image
+              source={{ uri: item.ImageUrl }}
+              style={styles.profileImage}
+            />
+            <View style={styles.userInfo}>
+              <Text>{item.UserName}</Text>
+              <Text>Catches: {item.catchCount}</Text>
             </View>
-          );
-        }}
+            {item.UserId !== getAuth().currentUser.uid ? (
+              <View>
+                <TouchableOpacity
+                  style={styles.followButton}
+                  onPress={
+                    following
+                      ? () => onUnfollow(item.UserId)
+                      : () => onFollow(item.UserId)
+                  }
+                >
+                  <Feather
+                    name={following ? "user-minus" : "user-plus"}
+                    size={20}
+                    color="#333"
+                  />
+                  <Text>{following ? "Unfollow" : "Follow"}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : null}
+          </View>
+        )}
       />
       <KeyboardAvoidingView behavior="padding">
         <View style={styles.searchBarContainer}>
