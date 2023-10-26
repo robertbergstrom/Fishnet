@@ -120,3 +120,53 @@ export async function getCatchesFromFirestore(userId) {
 
   return catches;
 }
+
+// Database logic for following/followers
+export const addFollower = async (currentUser, followingUserId) => {
+  const followingUserRef = doc(FIRESTORE_DB, "users", followingUserId);
+  const followersCollection = collection(followingUserRef, "Followers");
+  const followerUserRef = doc(followersCollection, currentUser.uid);
+  await setDoc(followerUserRef, { Follows: true });
+};
+
+export const addFollowing = async (currentUser, followerUserId) => {
+  const currentUserRef = doc(FIRESTORE_DB, "users", currentUser.uid);
+  const followingCollection = collection(currentUserRef, "Following");
+  const followingUserRef = doc(followingCollection, followerUserId);
+  await setDoc(followingUserRef, { Follows: true });
+};
+
+export const checkIfUserIsFollowing = async (currentUser, userId) => {
+  const followingRef = collection(
+    FIRESTORE_DB,
+    "users",
+    currentUser.uid,
+    "Following"
+  );
+  const followingQuery = query(followingRef);
+
+  try {
+    const followingSnapshot = await getDocs(followingQuery);
+    return (
+      !followingSnapshot.empty &&
+      followingSnapshot.docs.some((doc) => doc.id === userId)
+    );
+  } catch (error) {
+    console.error("Error checking if user is following:", error);
+    return false;
+  }
+};
+
+export const removeFollowing = async (currentUser, unfollowedUserId) => {
+  const currentUserRef = doc(FIRESTORE_DB, "users", currentUser.uid);
+  const followingCollection = collection(currentUserRef, "Following");
+  const followingUserRef = doc(followingCollection, unfollowedUserId);
+  await deleteDoc(followingUserRef);
+};
+
+export const removeFollower = async (unfollowedUserId, followerUserId) => {
+  const followingUserRef = doc(FIRESTORE_DB, "users", unfollowedUserId);
+  const followersCollection = collection(followingUserRef, "Followers");
+  const followerUserRef = doc(followersCollection, followerUserId);
+  await deleteDoc(followerUserRef);
+};

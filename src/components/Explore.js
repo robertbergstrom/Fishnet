@@ -1,67 +1,147 @@
-import {
-  StyleSheet,
-  Text,
-  View,
-  KeyboardAvoidingView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Image,
-} from "react-native";
 import React, { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
-import { Feather } from "@expo/vector-icons";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  TextInput,
+  KeyboardAvoidingView,
+  StyleSheet,
+} from "react-native";
+import { getAuth } from "firebase/auth";
 import {
   query,
   collection,
+  getDocs,
   where,
   onSnapshot,
-  getDocs,
+  queryEqual,
 } from "firebase/firestore";
-import { FIRESTORE_DB } from "./firebase";
+import {
+  FIRESTORE_DB,
+  checkIfUserIsFollowing,
+  addFollower,
+  addFollowing,
+  removeFollowing,
+  removeFollower,
+} from "./firebase"; // Import your Firebase functions
+import { Feather } from "@expo/vector-icons";
 
 const Explore = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [data, setData] = useState([]);
+  const [followingStatus, setFollowingStatus] = useState({}); // Local state to track following status
 
-  const handleSearch = async () => {
-    await fetchUserData();
-  };
+  useEffect(() => {
+    const currentUser = getAuth().currentUser;
+    const fetchData = async () => {
+      try {
+        const usersQuery = query(collection(FIRESTORE_DB, "users"));
+        const usersSnapshot = await getDocs(usersQuery);
+
+        const usersData = {};
+
+        for (const doc of usersSnapshot.docs) {
+          const userData = doc.data();
+          const userId = doc.id;
+          const isFollowing = await checkIfUserIsFollowing(currentUser, userId);
+          usersData[userId] = { ...userData, isFollowing };
+        }
+
+        setData(usersData);
+        setFollowingStatus(usersData); // Initialize followingStatus with user data
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (searchTerm) {
+      // Create a reference to the "users" collection
       const usersRef = collection(FIRESTORE_DB, "users");
+
+      // Create a query to search for users whose username contains the search term
       const q = query(
         usersRef,
         where("UserName", ">=", searchTerm),
-        where("UserName", "<=", searchTerm + "\uf8ff")
+        where("UserName", "<=", searchTerm + "\uf8ff") // '\uf8ff' is a special character that ensures the search term is a prefix
       );
 
-      const unsubscribe = onSnapshot(q, async (snapshot) => {
+      // Attach a listener to the query
+      const unsubscribe = onSnapshot(q, (snapshot) => {
         const results = [];
-        for (const doc of snapshot.docs) {
-          const userData = doc.data();
-          const userCatchesRef = collection(
-            FIRESTORE_DB,
-            "users",
-            doc.id,
-            "catches"
-          );
-          const userCatchesQuery = query(userCatchesRef);
-          const userCatchesSnapshot = await getDocs(userCatchesQuery);
-          const catchCount = userCatchesSnapshot.size;
-          results.push({ ...userData, catchCount });
-        }
+        snapshot.forEach((doc) => {
+          results.push(doc.data());
+        });
         setSearchResults(results);
       });
 
+      // Clean up the listener when the component unmounts
       return () => {
         unsubscribe();
       };
     } else {
+      // If the search term is empty, clear the results
       setSearchResults([]);
     }
   }, [searchTerm]);
+
+  const handleSearch = async () => {
+    try {
+      const currentUser = getAuth().currentUser;
+      const usersQuery = query(collection(FIRESTORE_DB, "users"));
+      const usersSnapshot = await getDocs(usersQuery);
+
+      const filteredUsers = {};
+
+      for (const doc of usersSnapshot.docs) {
+        const userData = doc.data();
+        const userId = doc.id;
+        const isFollowing = await checkIfUserIsFollowing(currentUser, userId);
+
+        if (
+          userData.UserName.toLowerCase().includes(searchTerm.toLowerCase())
+        ) {
+          filteredUsers[userId] = { ...userData, isFollowing };
+        }
+      }
+
+      setSearchResults(filteredUsers);
+
+      // Update followingStatus to include all items in searchResults
+      setFollowingStatus((prevFollowingStatus) => ({
+        ...prevFollowingStatus,
+        ...filteredUsers,
+      }));
+    } catch (error) {
+      console.error("Error searching for users:", error);
+    }
+  };
+
+  const handleFollowUser = async (followedUserId, isFollowing) => {
+    const currentUser = getAuth().currentUser;
+    if (isFollowing) {
+      await removeFollowing(currentUser, followedUserId);
+      await removeFollower(followedUserId, currentUser.uid);
+    } else {
+      await addFollower(currentUser, followedUserId);
+      await addFollowing(currentUser, followedUserId);
+    }
+
+    // Update the followingStatus state to reflect the change
+    setFollowingStatus((prevFollowingStatus) => ({
+      ...prevFollowingStatus,
+      [followedUserId]: {
+        ...prevFollowingStatus[followedUserId],
+        isFollowing: !isFollowing,
+      },
+    }));
+  };
 
   return (
     <View style={styles.container}>
@@ -69,21 +149,46 @@ const Explore = () => {
         <Text style={styles.headingText}>Explore anglers</Text>
       </View>
       <FlatList
-        data={searchResults}
+        data={searchTerm ? searchResults : []}
         keyExtractor={(item) => item.UserId}
-        renderItem={({ item }) => (
-          <View style={styles.profileCard}>
-            <Image src={item.ImageUrl} style={styles.profileImage} />
-            <View style={styles.userInfo}>
-              <Text>{item.UserName}</Text>
-              <Text>Catches: {item.catchCount}</Text>
+        renderItem={({ item }) => {
+          // Check if item is undefined in followingStatus, and handle accordingly
+          if (!followingStatus[item.UserId]) {
+            return null;
+          }
+
+          return (
+            <View style={styles.profileCard}>
+              <Image
+                source={{ uri: item.ImageUrl }}
+                style={styles.profileImage}
+              />
+              <View style={styles.userInfo}>
+                <Text>{item.UserName}</Text>
+                <Text>Catches: {item.catchCount}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.followButton}
+                onPress={() => handleFollowUser(item.UserId, item.isFollowing)}
+              >
+                <Feather
+                  name={
+                    followingStatus[item.UserId].isFollowing
+                      ? "user-minus"
+                      : "user-plus"
+                  }
+                  size={20}
+                  color="#333"
+                />
+                <Text>
+                  {followingStatus[item.UserId].isFollowing
+                    ? "Unfollow"
+                    : "Follow"}
+                </Text>
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.followButton} onPress={() => {}}>
-              <Feather name="user-plus" size={20} color="#333" />
-              <Text>Follow</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+          );
+        }}
       />
       <KeyboardAvoidingView behavior="padding">
         <View style={styles.searchBarContainer}>
