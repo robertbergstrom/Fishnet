@@ -14,21 +14,35 @@ import {
   uploadCatchImage,
   addCatchToFirestore,
   FIREBASE_AUTH,
-  FIREBASE_APP,
-  FIRESTORE_DB,
 } from "./firebase";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
+import uuid from "react-native-uuid";
+import { GeoPoint } from "firebase/firestore";
 
 const AddCatchScreen = ({ userId }) => {
   const [image, setImage] = useState(null);
   const [fishType, setFishType] = useState("");
   const [length, setLength] = useState("");
   const [weight, setWeight] = useState("");
+  const [location, setLocation] = useState(null);
   const auth = FIREBASE_AUTH;
   const user = auth.currentUser;
   const navigation = useNavigation();
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        setErrorMsg("Permission to access location was denied");
+        return;
+      }
+
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
+    })();
+  }, []);
 
   const handleImagePick = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -47,23 +61,7 @@ const AddCatchScreen = ({ userId }) => {
 
     if (!result.canceled) {
       setImage(result.uri);
-
-      // Extract location data from the image's EXIF data
-      const exifData = await Exif.getExif(result.uri);
-      const latitude = exifData.GPSLatitude;
-      const longitude = exifData.GPSLongitude;
-
-      // Now, you can use latitude and longitude to set the Location field in your Firestore document.
     }
-  };
-
-  const getLocationPermission = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      alert("Location access required to capture the location.");
-      return null;
-    }
-    return Location.getCurrentPositionAsync({});
   };
 
   const handleCameraCapture = async () => {
@@ -78,13 +76,14 @@ const AddCatchScreen = ({ userId }) => {
       return;
     }
 
-    const locationPermission = await getLocationPermission();
-
-    if (locationPermission) {
-      // Get the captured location
-      const { coords } = locationPermission;
-      const latitude = coords.latitude;
-      const longitude = coords.longitude;
+    // Ensure location is set in the state before capturing an image
+    if (
+      !location ||
+      location.coords.latitude === undefined ||
+      location.coords.longitude === undefined
+    ) {
+      alert("Location data is missing or incomplete.");
+      return;
     }
 
     const result = await ImagePicker.launchCameraAsync({
@@ -95,22 +94,33 @@ const AddCatchScreen = ({ userId }) => {
 
     if (!result.cancelled) {
       setImage(result.uri);
+      setLocation({ latitude, longitude });
     }
   };
 
   const handleAddCatch = async () => {
     try {
+      if (
+        !location ||
+        location.coords.latitude === undefined ||
+        location.coords.longitude === undefined
+      ) {
+        alert("Location data is missing or incomplete.");
+        return;
+      }
+
       // First, upload the image to Firebase Storage and get the download URL
       const imageUrl = await uploadCatchImage(user.uid, image);
 
       // Then, add catch data to Firestore
+      const { coords } = location;
       const catchData = {
         FishType: fishType,
         Length: length,
         Weight: weight,
         ImageUrl: imageUrl,
         UserId: user.uid,
-        // Location: new FIREBASE_APP.FIRESTORE_DB.GeoPoint(latitude, longitude),
+        Location: new GeoPoint(coords.latitude, coords.longitude), // Access coords.latitude and coords.longitude
       };
 
       const catchRefId = await addCatchToFirestore(catchData, user);
@@ -122,7 +132,7 @@ const AddCatchScreen = ({ userId }) => {
       }
     } catch (error) {
       console.error("Error adding catch: ", error);
-      alert("Catch upload failed: ", error.message);
+      alert("Catch upload failed: " + error.message);
     }
   };
 
@@ -165,6 +175,7 @@ const AddCatchScreen = ({ userId }) => {
             value={length}
             onChangeText={setLength}
           />
+          <Text style={{ color: "grey" }}>cm</Text>
         </View>
         <View style={styles.input}>
           <MaterialCommunityIcons
@@ -177,6 +188,7 @@ const AddCatchScreen = ({ userId }) => {
             value={weight}
             onChangeText={setWeight}
           />
+          <Text style={{ color: "grey" }}>kg</Text>
         </View>
         <TouchableOpacity style={styles.postButton} onPress={handleAddCatch}>
           <Text style={{ color: "white" }}>Post catch!</Text>
@@ -235,6 +247,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 7,
     width: 230,
     backgroundColor: "white",

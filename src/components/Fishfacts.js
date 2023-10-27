@@ -17,7 +17,6 @@ export default function FishList() {
   const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
-    // Fetch data from the API
     fetchFishData();
   }, [searchTerm]);
 

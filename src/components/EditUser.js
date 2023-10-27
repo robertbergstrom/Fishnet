@@ -37,6 +37,7 @@ const EditUser = ({ route }) => {
     userInfo.UserName = newUsername;
     userInfo.FirstName = newFirstName;
     userInfo.LastName = newLastName;
+    userInfo.ImageUrl = imageUrl;
 
     alert("Profile updated.");
     navigation.navigate("ProfileScreen");

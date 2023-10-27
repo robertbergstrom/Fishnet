@@ -20,6 +20,7 @@ import {
   writeBatch,
   doc,
   deleteDoc,
+  ref,
 } from "firebase/firestore";
 import {
   FIRESTORE_DB,
@@ -80,6 +81,7 @@ const Explore = () => {
   }, [searchTerm]);
 
   const onFollow = async (followUserId) => {
+    const batch = writeBatch(FIRESTORE_DB);
     const followsRef = doc(
       FIRESTORE_DB,
       "users",
@@ -124,7 +126,9 @@ const Explore = () => {
       </View>
       <FlatList
         data={searchTerm ? searchResults : []}
-        keyExtractor={(item) => item.UserId}
+        keyExtractor={(item) => {
+          return item.UserId;
+        }}
         renderItem={({ item }) => (
           <View style={styles.profileCard}>
             <Image

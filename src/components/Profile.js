@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Button,
+  FlatList,
   StyleSheet,
   Image,
   TouchableOpacity,
@@ -19,9 +19,10 @@ const Profile = () => {
   const user = auth.currentUser;
   const navigationProfile = useNavigation();
   const [userInfo, setUserInfo] = useState(null);
-  const [userCatches, setUserCatches] = useState([]);
+  const [catchCount, setCatchCount] = useState(0);
+  const [catchesData, setCatchesData] = useState([]);
 
-  const fetchData = async () => {
+  const fetchUserData = async () => {
     const userDocRef = doc(FIRESTORE_DB, "users", user.uid);
     const userDocSnapshot = await getDoc(userDocRef);
     if (userDocSnapshot.exists()) {
@@ -32,7 +33,8 @@ const Profile = () => {
   };
 
   useEffect(() => {
-    fetchData();
+    fetchUserData();
+
     const q = query(collection(FIRESTORE_DB, "users", user.uid, "catches"));
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -41,7 +43,8 @@ const Profile = () => {
         catches.push(doc.data());
       });
 
-      setUserCatches(catches);
+      setCatchesData(catches);
+      setCatchCount(catches.length); // Set the catch count here
     });
 
     return () => {
@@ -103,7 +106,7 @@ const Profile = () => {
         <View style={styles.catchesContainer}>
           <View style={styles.catchesBox}>
             <Text>Catches</Text>
-            <Text>{userCatches.length}</Text>
+            <Text>{catchCount}</Text>
           </View>
           <View style={styles.catchesBox}>
             <Text>Followers</Text>
@@ -120,51 +123,60 @@ const Profile = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.feedContainer}>
-        {/* Loop through the firebase database for feed */}
-        <View style={styles.catchContainer}>
-          <View style={styles.catchHeader}>
-            <TouchableOpacity>
-              <View style={styles.imageAndUsernameContainer}>
-                <Image
-                  style={styles.userImage}
-                  src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                />
-                <Text style={styles.username}>Username</Text>
+      {catchesData.length > 0 ? (
+        <FlatList
+          style={styles.feedContainer}
+          data={catchesData}
+          keyExtractor={(item) => {
+            return item.newCatchId;
+          }}
+          renderItem={({ item }) => (
+            // <ScrollView style={styles.feedContainer}>
+            <View style={styles.catchContainer}>
+              <View style={styles.catchHeader}>
+                <TouchableOpacity>
+                  <View style={styles.imageAndUsernameContainer}>
+                    <Image style={styles.userImage} src={user.photoURL} />
+                    <Text style={styles.username}>{userInfo.UserName}</Text>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Feather name="more-horizontal" size={24} color="black" />
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Feather name="more-horizontal" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <Image
-            style={styles.catchImage}
-            src="https://images.pexels.com/photos/3793366/pexels-photo-3793366.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-          />
-          <View style={styles.catchFooter}>
-            <TouchableOpacity>
-              <Text style={styles.username}>142 likes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.commentText}>19 comments</Text>
-            </TouchableOpacity>
-            <View style={styles.footerIcons}>
-              <TouchableOpacity>
-                <Octicons name="comment" size={24} color="black" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="heart" size={24} color="black" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="info" size={24} color="black" />
-              </TouchableOpacity>
+              <Image style={styles.catchImage} src={item.ImageUrl} />
+              <View style={styles.catchFooter}>
+                <TouchableOpacity>
+                  <Text style={styles.username}>142 likes</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text style={styles.commentText}>19 comments</Text>
+                </TouchableOpacity>
+                <View style={styles.footerIcons}>
+                  <TouchableOpacity>
+                    <Octicons name="comment" size={24} color="black" />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Feather name="heart" size={24} color="black" />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Feather name="info" size={24} color="black" />
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
-      </ScrollView>
+            // </ScrollView>
+          )}
+        />
+      ) : (
+        <Text style={styles.noPostsText}>No catches... post one now!</Text>
+      )}
     </View>
   );
 };
+
+export default Profile;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -314,5 +326,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-evenly",
   },
+  noPostsText: {
+    flex: 1,
+  },
 });
-export default Profile;

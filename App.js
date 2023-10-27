@@ -14,7 +14,7 @@ import LoginNavigator from "./src/navigation/LoginNavigator.js";
 
 const Stack = createNativeStackNavigator();
 
-const App = () => {
+export default function App() {
   const [user, setUser] = useState(null);
   const auth = FIREBASE_AUTH;
 
@@ -44,9 +44,7 @@ const App = () => {
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
-
-export default App;
+}
 
 const Tab = createBottomTabNavigator();
 
