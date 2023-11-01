@@ -4,7 +4,7 @@ import React from "react";
 const HomeHeader = () => {
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.headingText}>Catches from people you follow</Text>
+      <Text style={styles.headingText}>For you</Text>
     </View>
   );
 };

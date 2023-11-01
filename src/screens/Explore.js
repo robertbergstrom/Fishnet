@@ -29,7 +29,7 @@ import {
   addFollowing,
   removeFollowing,
   removeFollower,
-} from "./firebase";
+} from "../components/firebase";
 import { getAuth } from "firebase/auth";
 import { StatusBar } from "expo-status-bar";
 
@@ -121,12 +121,16 @@ const Explore = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/fishnet-348012.appspot.com/o/fishnetbackground2.jpg?alt=media&token=0d768446-5028-4754-8edd-7eca19961c0f&_gl=1*w89brk*_ga*MTEwMzY2NDk1NC4xNjk2NTgyOTgy*_ga_CW55HF8NVT*MTY5ODc0NzI4NS41Mi4xLjE2OTg3NDc4NTkuNjAuMC4w"
+        style={styles.backgroundImage}
+      />
       <View style={styles.headerContainer}>
         <Text style={styles.headingText}>Explore anglers</Text>
       </View>
       <FlatList
         data={searchTerm ? searchResults : []}
-        keyExtractor={(item) => {
+        key={(item) => {
           return item.UserId;
         }}
         renderItem={({ item }) => (
@@ -136,8 +140,8 @@ const Explore = () => {
               style={styles.profileImage}
             />
             <View style={styles.userInfo}>
-              <Text>{item.UserName}</Text>
-              <Text>Catches: {item.catchCount}</Text>
+              <Text style={{ color: "white" }}>{item.UserName}</Text>
+              <Text style={{ color: "white" }}>Catches: {item.catchCount}</Text>
             </View>
             {item.UserId !== getAuth().currentUser.uid ? (
               <View>
@@ -152,9 +156,11 @@ const Explore = () => {
                   <Feather
                     name={following ? "user-minus" : "user-plus"}
                     size={20}
-                    color="#333"
+                    color="white"
                   />
-                  <Text>{following ? "Unfollow" : "Follow"}</Text>
+                  <Text style={{ color: "white" }}>
+                    {following ? "Unfollow" : "Follow"}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : null}
@@ -200,8 +206,9 @@ const styles = StyleSheet.create({
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
     padding: 16,
+    borderTopWidth: 2,
+    borderColor: "#0782F9",
   },
   searchBarInputContainer: {
     flexDirection: "row",
@@ -210,7 +217,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 20,
     overflow: "hidden",
-    marginTop: 10,
+    backgroundColor: "white",
   },
   searchBarInput: {
     flex: 1,
@@ -226,9 +233,11 @@ const styles = StyleSheet.create({
     height: 150,
     borderWidth: 2,
     borderRadius: 10,
+    borderColor: "white",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+    backgroundColor: "#218cde",
   },
   profileImage: {
     width: 120,
@@ -242,5 +251,10 @@ const styles = StyleSheet.create({
   followButton: {
     alignItems: "center",
     padding: 10,
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 });

@@ -6,8 +6,9 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Image,
 } from "react-native";
-import { FIREBASE_AUTH } from "./firebase";
+import { FIREBASE_AUTH } from "../components/firebase";
 import { deleteUser } from "firebase/auth";
 import Modal from "react-native-modal";
 import { Feather } from "@expo/vector-icons";
@@ -21,18 +22,32 @@ const Settings = () => {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
-      <Text>Settings Screen</Text>
-      <Button title="Sign Out" onPress={() => auth.signOut()} />
-      <Button title="Delete Account" onPress={() => setModalVisible(true)} />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/fishnet-348012.appspot.com/o/fishnetbackground2.jpg?alt=media&token=0d768446-5028-4754-8edd-7eca19961c0f&_gl=1*w89brk*_ga*MTEwMzY2NDk1NC4xNjk2NTgyOTgy*_ga_CW55HF8NVT*MTY5ODc0NzI4NS41Mi4xLjE2OTg3NDc4NTkuNjAuMC4w"
+        style={styles.backgroundImage}
+      />
+      <TouchableOpacity
+        onPress={() => auth.signOut()}
+        style={styles.postButton}
+      >
+        <Text style={{ color: "white" }}>Sign out</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => {}} style={styles.postButton}>
+        <Text style={{ color: "white" }}>Delete account</Text>
+      </TouchableOpacity>
       <TouchableOpacity
         onPress={() => setModalVisible(true)}
-        style={styles.aboutButton}
+        style={styles.postButton}
       >
-        <Feather name="info" size={24} color="black" />
-        <Text>About</Text>
+        <Feather name="info" size={24} color="white" />
+        <Text style={{ color: "white" }}>About</Text>
       </TouchableOpacity>
 
-      <Modal isVisible={isModalVisible} style={styles.modalContainer}>
+      <Modal
+        isVisible={isModalVisible}
+        style={styles.modalContainer}
+        animationType="slide"
+      >
         <ScrollView style={styles.aboutContainer}>
           <Text style={styles.aboutHeader}>
             About Our Fishing Community App
@@ -105,17 +120,21 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 40,
     marginVertical: 80,
-
     alignItems: "center",
   },
-  aboutButton: {
-    flexDirection: "row",
+  postButton: {
     alignItems: "center",
-    gap: 5,
-    marginBottom: 20,
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 10,
+    backgroundColor: "#218cde",
+    width: 150,
+    height: 50,
     borderWidth: 2,
-    borderRadius: 20,
-    padding: 7,
+    borderColor: "white",
+    borderRadius: 15,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
   },
   aboutContainer: {
     marginHorizontal: 30,
@@ -131,5 +150,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 0.5,
     marginVertical: 5,
     paddingBottom: 10,
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 });

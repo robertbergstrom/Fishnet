@@ -7,15 +7,20 @@ import {
   ScrollView,
   Image,
   StyleSheet,
+  FlatList,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Octicons } from "@expo/vector-icons";
-import { useFonts } from "expo-font";
-import HomeHeader from "./HomeHeader";
+import HomeHeader from "../components/HomeHeader";
 import { StatusBar } from "expo-status-bar";
+import { getAllUsersAndCatches } from "../components/firebase";
 
 export default function Home() {
   const navigation = useNavigation();
+  const [data, setData] = useState([]);
+  const [selectedCatch, setSelectedCatch] = useState(null); // For the selected catch
+  const [modalVisible, setModalVisible] = useState(false); // To control modal visibility
 
   const handleAddCatch = () => {
     navigation.navigate("AddCatchScreen");
@@ -27,6 +32,23 @@ export default function Home() {
 
   const explore = () => {
     navigation.navigate("ExploreScreen");
+  };
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const combinedData = await getAllUsersAndCatches();
+        setData(combinedData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    }
+    fetchData();
+  }, []);
+
+  const openModal = (catchData) => {
+    setSelectedCatch(catchData);
+    setModalVisible(true);
   };
 
   return (
@@ -49,48 +71,67 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.feedContainer}>
-        {/* Loop through the firebase database for feed */}
-        <View style={styles.catchContainer}>
-          <View style={styles.catchHeader}>
-            <TouchableOpacity>
-              <View style={styles.imageAndUsernameContainer}>
-                <Image
-                  style={styles.userImage}
-                  src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-                />
-                <Text style={styles.username}>Username</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Feather name="more-horizontal" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
-          <Image
-            style={styles.catchImage}
-            src="https://images.pexels.com/photos/3793366/pexels-photo-3793366.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-          />
-          <View style={styles.catchFooter}>
-            <TouchableOpacity>
-              <Text style={styles.username}>142 likes</Text>
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Text style={styles.commentText}>19 comments</Text>
-            </TouchableOpacity>
-            <View style={styles.footerIcons}>
+      <FlatList
+        style={styles.feedContainer}
+        data={data}
+        key={(item) => {
+          return item.name;
+        }}
+        renderItem={({ item }) => (
+          <View style={styles.catchContainer}>
+            <View style={styles.catchHeader}>
               <TouchableOpacity>
-                <Octicons name="comment" size={24} color="black" />
+                <View style={styles.imageAndUsernameContainer}>
+                  <Image
+                    style={styles.userImage}
+                    src={item.userData.ImageUrl}
+                  />
+                  <Text style={styles.username}>{item.userData.UserName}</Text>
+                </View>
               </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="heart" size={24} color="black" />
-              </TouchableOpacity>
-              <TouchableOpacity>
-                <Feather name="info" size={24} color="black" />
+              <TouchableOpacity onPress={() => {}}>
+                <Feather name="more-horizontal" size={24} color="black" />
               </TouchableOpacity>
             </View>
+            <Image style={styles.catchImage} src={item.catchData.ImageUrl} />
+            <View style={styles.catchFooter}>
+              <TouchableOpacity>
+                <Text style={styles.username}>142 likes</Text>
+              </TouchableOpacity>
+              <TouchableOpacity>
+                <Text style={styles.commentText}>19 comments</Text>
+              </TouchableOpacity>
+              <View style={styles.footerIcons}>
+                <TouchableOpacity>
+                  <Octicons name="comment" size={24} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Feather name="heart" size={24} color="black" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => openModal(item.catchData)}>
+                  <Feather name="info" size={24} color="black" />
+                </TouchableOpacity>
+              </View>
+            </View>
           </View>
+        )}
+      />
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <Text>Additional info</Text>
+          <Text>Fish Type: {selectedCatch?.FishType}</Text>
+          <Text>Length: {selectedCatch?.Length}</Text>
+          <Text>Weight: {selectedCatch?.Weight}</Text>
+          <TouchableOpacity onPress={() => setModalVisible(false)}>
+            <Text>Close Modal</Text>
+          </TouchableOpacity>
         </View>
-      </ScrollView>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -207,5 +248,16 @@ const styles = StyleSheet.create({
   },
   commentText: {
     color: "grey",
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    borderRadius: 40,
+    marginVertical: 80,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 15,
+    width: 300,
+    height: 200,
+    borderWidth: 2,
   },
 });

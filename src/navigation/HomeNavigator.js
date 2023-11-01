@@ -1,9 +1,9 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Home from "../components/Home";
-import Fishfacts from "../components/Fishfacts";
-import AddCatchScreen from "../components/AddCatchScreen";
-import Explore from "../components/Explore";
+import Home from "../screens/Home";
+import Fishfacts from "../screens/Fishfacts";
+import AddCatchScreen from "../screens/AddCatchScreen";
+import Explore from "../screens/Explore";
 
 const HomeStack = createNativeStackNavigator();
 

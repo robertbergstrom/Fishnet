@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
+  Text,
   Button,
   StyleSheet,
   TextInput,
   KeyboardAvoidingView,
+  TouchableOpacity,
+  Image,
 } from "react-native";
-import { FIREBASE_AUTH, FIRESTORE_DB } from "./firebase";
-import ImageSelector from "./ImageSelector";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../components/firebase";
+import ImageSelector from "../components/ImageSelector";
 import { doc, setDoc } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import { LogBox } from "react-native";
 
 const EditUser = ({ route }) => {
   const { userInfo } = route.params;
@@ -21,6 +25,10 @@ const EditUser = ({ route }) => {
   const auth = FIREBASE_AUTH;
   const user = auth.currentUser;
   const navigation = useNavigation();
+
+  LogBox.ignoreLogs([
+    "Non-serializable values were found in the navigation state",
+  ]);
 
   const handleImageSelected = (url) => {
     setImageUrl(url);
@@ -46,6 +54,10 @@ const EditUser = ({ route }) => {
   return (
     <KeyboardAvoidingView behavior="padding" style={styles.container}>
       <StatusBar style="auto" />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/fishnet-348012.appspot.com/o/fishnetbackground2.jpg?alt=media&token=0d768446-5028-4754-8edd-7eca19961c0f&_gl=1*w89brk*_ga*MTEwMzY2NDk1NC4xNjk2NTgyOTgy*_ga_CW55HF8NVT*MTY5ODc0NzI4NS41Mi4xLjE2OTg3NDc4NTkuNjAuMC4w"
+        style={styles.backgroundImage}
+      />
       <ImageSelector />
       {!userInfo.UserName ? (
         <TextInput
@@ -92,8 +104,9 @@ const EditUser = ({ route }) => {
           style={styles.input}
         />
       )}
-
-      <Button title="Save Changes" onPress={handleSaveChanges} />
+      <TouchableOpacity onPress={handleSaveChanges} style={styles.postButton}>
+        <Text style={{ color: "white" }}>Save Changes</Text>
+      </TouchableOpacity>
     </KeyboardAvoidingView>
   );
 };
@@ -107,13 +120,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   input: {
-    width: "80%",
-    height: 50,
-    marginVertical: 15,
+    backgroundColor: "white",
+    width: 230,
+    height: 55,
+    marginVertical: 12,
     padding: 10,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
+    borderWidth: 2,
+    borderRadius: 10,
+    borderColor: "#2142A9",
+    flexDirection: "row",
+    gap: 10,
   },
   cameraContainer: {
     flex: 1,
@@ -122,5 +138,22 @@ const styles = StyleSheet.create({
   fixedRatio: {
     flex: 1,
     aspectRatio: 1,
+  },
+  postButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#218cde",
+    width: 150,
+    height: 60,
+    borderWidth: 2,
+    borderColor: "white",
+    borderRadius: 15,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 });

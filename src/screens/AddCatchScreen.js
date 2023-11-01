@@ -14,11 +14,10 @@ import {
   uploadCatchImage,
   addCatchToFirestore,
   FIREBASE_AUTH,
-} from "./firebase";
+} from "../components/firebase";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import uuid from "react-native-uuid";
 import { GeoPoint } from "firebase/firestore";
 
 const AddCatchScreen = ({ userId }) => {
@@ -75,14 +74,12 @@ const AddCatchScreen = ({ userId }) => {
       alert("Camera access required to take a photo.");
       return;
     }
-
-    // Ensure location is set in the state before capturing an image
     if (
       !location ||
       location.coords.latitude === undefined ||
       location.coords.longitude === undefined
     ) {
-      alert("Location data is missing or incomplete.");
+      alert("Location data is missing or incomplete!");
       return;
     }
 
@@ -109,10 +106,8 @@ const AddCatchScreen = ({ userId }) => {
         return;
       }
 
-      // First, upload the image to Firebase Storage and get the download URL
       const imageUrl = await uploadCatchImage(user.uid, image);
 
-      // Then, add catch data to Firestore
       const { coords } = location;
       const catchData = {
         FishType: fishType,
@@ -120,7 +115,7 @@ const AddCatchScreen = ({ userId }) => {
         Weight: weight,
         ImageUrl: imageUrl,
         UserId: user.uid,
-        Location: new GeoPoint(coords.latitude, coords.longitude), // Access coords.latitude and coords.longitude
+        Location: new GeoPoint(coords.latitude, coords.longitude),
       };
 
       const catchRefId = await addCatchToFirestore(catchData, user);
@@ -139,60 +134,67 @@ const AddCatchScreen = ({ userId }) => {
   return (
     <View>
       <StatusBar style="auto" />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/fishnet-348012.appspot.com/o/fishnetbackground2.jpg?alt=media&token=0d768446-5028-4754-8edd-7eca19961c0f&_gl=1*w89brk*_ga*MTEwMzY2NDk1NC4xNjk2NTgyOTgy*_ga_CW55HF8NVT*MTY5ODc0NzI4NS41Mi4xLjE2OTg3NDc4NTkuNjAuMC4w"
+        style={styles.backgroundImage}
+      />
       <View style={styles.headerContainer}>
         <Text style={styles.headingText}>Post a new catch</Text>
       </View>
-      <KeyboardAvoidingView
-        style={styles.postCatchContainer}
-        behavior="padding"
-      >
-        {image && (
-          <Image
-            source={{ uri: image }}
-            style={{ width: 240, height: 180, borderRadius: 10 }}
-          />
-        )}
-        <TouchableOpacity style={styles.button} onPress={handleImagePick}>
-          <Feather name="upload" size={24} color="black" />
-          <Text>Upload photo from library</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={handleCameraCapture}>
-          <Feather name="camera" size={24} color="black" />
-          <Text>Take photo</Text>
-        </TouchableOpacity>
-        <View style={styles.input}>
-          <MaterialCommunityIcons name="fish" size={24} color="grey" />
-          <TextInput
-            placeholder="Fishtype"
-            value={fishType}
-            onChangeText={setFishType}
-          />
+      <KeyboardAvoidingView style={styles.container} behavior="padding">
+        <View style={styles.postCatchContainer}>
+          {image && (
+            <Image
+              source={{ uri: image }}
+              style={{ width: 240, height: 180, borderRadius: 10 }}
+            />
+          )}
+          <TouchableOpacity style={styles.button} onPress={handleImagePick}>
+            <Feather name="upload" size={24} color="black" />
+            <Text>Upload photo from library</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={handleCameraCapture}>
+            <Feather name="camera" size={24} color="black" />
+            <Text>Take photo</Text>
+          </TouchableOpacity>
+          <View style={styles.input}>
+            <MaterialCommunityIcons name="fish" size={24} color="grey" />
+            <TextInput
+              placeholder="Fishtype"
+              value={fishType}
+              onChangeText={setFishType}
+            />
+          </View>
+          <View style={styles.input}>
+            <MaterialCommunityIcons
+              name="tape-measure"
+              size={24}
+              color="grey"
+            />
+            <TextInput
+              placeholder="Length in"
+              value={length}
+              onChangeText={setLength}
+            />
+            <Text style={{ color: "grey" }}>cm</Text>
+          </View>
+          <View style={styles.input}>
+            <MaterialCommunityIcons
+              name="weight-kilogram"
+              size={24}
+              color="grey"
+            />
+            <TextInput
+              placeholder="Weight in"
+              value={weight}
+              onChangeText={setWeight}
+            />
+            <Text style={{ color: "grey" }}>kg</Text>
+          </View>
+          <TouchableOpacity style={styles.postButton} onPress={handleAddCatch}>
+            <Text style={{ color: "white" }}>Post catch!</Text>
+          </TouchableOpacity>
         </View>
-        <View style={styles.input}>
-          <MaterialCommunityIcons name="tape-measure" size={24} color="grey" />
-          <TextInput
-            placeholder="Length in cm"
-            value={length}
-            onChangeText={setLength}
-          />
-          <Text style={{ color: "grey" }}>cm</Text>
-        </View>
-        <View style={styles.input}>
-          <MaterialCommunityIcons
-            name="weight-kilogram"
-            size={24}
-            color="grey"
-          />
-          <TextInput
-            placeholder="Weight in kg"
-            value={weight}
-            onChangeText={setWeight}
-          />
-          <Text style={{ color: "grey" }}>kg</Text>
-        </View>
-        <TouchableOpacity style={styles.postButton} onPress={handleAddCatch}>
-          <Text style={{ color: "white" }}>Post catch!</Text>
-        </TouchableOpacity>
       </KeyboardAvoidingView>
     </View>
   );
@@ -201,6 +203,10 @@ const AddCatchScreen = ({ userId }) => {
 export default AddCatchScreen;
 
 const styles = StyleSheet.create({
+  container: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   headerContainer: {
     height: 70,
     width: "100%",
@@ -230,13 +236,15 @@ const styles = StyleSheet.create({
     width: 230,
     borderWidth: 2,
     borderRadius: 10,
+    borderColor: "#2142A9",
+    backgroundColor: "#59d0ff",
     paddingHorizontal: 9,
     paddingVertical: 7,
   },
   postButton: {
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "blue",
+    backgroundColor: "#218cde",
     width: 150,
     height: 60,
     borderWidth: 2,
@@ -254,5 +262,11 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 2,
     borderRadius: 10,
+    borderColor: "#2142A9",
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 });

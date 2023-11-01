@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { FIREBASE_AUTH, FIRESTORE_DB, fetchUserCatches } from "./firebase";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../components/firebase";
 import { collection, doc, getDoc, onSnapshot, query } from "firebase/firestore";
 import { useNavigation } from "@react-navigation/native";
 import { Feather, Octicons } from "@expo/vector-icons";
@@ -44,7 +44,7 @@ const Profile = () => {
       });
 
       setCatchesData(catches);
-      setCatchCount(catches.length); // Set the catch count here
+      setCatchCount(catches.length);
     });
 
     return () => {
@@ -61,6 +61,21 @@ const Profile = () => {
           UserName: newUserName,
           FirstName: newFirstName,
           LastName: newLastName,
+        });
+      },
+    });
+  };
+
+  const handleCatch = (CatchId) => {
+    navigationProfile.navigate("HandleCatchScreen", {
+      catchId: CatchId,
+      catchesData,
+      handleSaveChanges: (updatedFishType, updatedLength, updatedWeight) => {
+        setCatchesData({
+          ...catchesData,
+          FishType: updatedFishType,
+          Length: updatedLength,
+          Weigth: updatedWeight,
         });
       },
     });
@@ -95,7 +110,7 @@ const Profile = () => {
               />
             )}
           </View>
-          <View style={styles.profileDisplayText}>
+          <View>
             <DisplayUsername />
             <Text>{user.email}</Text>
             <Text>
@@ -127,20 +142,30 @@ const Profile = () => {
         <FlatList
           style={styles.feedContainer}
           data={catchesData}
-          keyExtractor={(item) => {
+          key={(item) => {
             return item.newCatchId;
           }}
           renderItem={({ item }) => (
-            // <ScrollView style={styles.feedContainer}>
             <View style={styles.catchContainer}>
               <View style={styles.catchHeader}>
                 <TouchableOpacity>
                   <View style={styles.imageAndUsernameContainer}>
-                    <Image style={styles.userImage} src={user.photoURL} />
+                    {!user.photoURL ? (
+                      <Image
+                        style={styles.userImage}
+                        src="https://images.pexels.com/photos/2968938/pexels-photo-2968938.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                      />
+                    ) : (
+                      <Image
+                        style={styles.profileImage}
+                        src={user.photoURL}
+                        alt="Avatar"
+                      />
+                    )}
                     <Text style={styles.username}>{userInfo.UserName}</Text>
                   </View>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => handleCatch(item.name)}>
                   <Feather name="more-horizontal" size={24} color="black" />
                 </TouchableOpacity>
               </View>
@@ -165,7 +190,6 @@ const Profile = () => {
                 </View>
               </View>
             </View>
-            // </ScrollView>
           )}
         />
       ) : (
@@ -182,18 +206,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "lightblue",
-  },
-  modalContainer: {
-    backgroundColor: "white",
-    borderRadius: 40,
-    marginVertical: 120,
   },
   profileCard: {
     width: "80%",
     height: "40%",
     backgroundColor: "white",
-    borderWidth: 0.5,
+    borderWidth: 2,
     borderRadius: 30,
     justifyContent: "space-between",
     alignItems: "center",
@@ -321,7 +339,7 @@ const styles = StyleSheet.create({
   catchesBox: {
     width: 80,
     height: 60,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "space-evenly",

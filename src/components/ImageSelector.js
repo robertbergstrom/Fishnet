@@ -38,9 +38,9 @@ const ImageSelector = ({ onImageSelected }) => {
           <Image style={styles.image} src={user.photoURL} />
         )}
       </View>
-      <TouchableOpacity onPress={takeImageHandler} style={styles.cameraButton}>
+      <TouchableOpacity onPress={takeImageHandler} style={styles.button}>
         <Feather name="camera" size={24} color="black" />
-        <Text>Profile photo</Text>
+        <Text>Take photo</Text>
       </TouchableOpacity>
     </View>
   );
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     width: 170,
     height: 170,
-    marginBottom: 50,
+    marginBottom: 60,
   },
   imagePreview: {
     width: "100%",
@@ -67,14 +67,17 @@ const styles = StyleSheet.create({
     width: "100%",
     borderRadius: 50,
   },
-  cameraButton: {
+  button: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    marginBottom: 20,
+    justifyContent: "center",
+    gap: 7,
+    width: 230,
     borderWidth: 2,
-    borderRadius: 20,
-    paddingVertical: 7,
+    borderRadius: 10,
+    borderColor: "#2142A9",
+    backgroundColor: "#59d0ff",
     paddingHorizontal: 9,
+    paddingVertical: 7,
   },
 });

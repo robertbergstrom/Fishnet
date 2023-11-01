@@ -86,7 +86,7 @@ export async function addCatchToFirestore(catchData, user) {
   }
 }
 
-// Function to upload a catch image to Firebase Storage
+// Upload a catch image to Firebase Storage
 export async function uploadCatchImage(userId, imageUri) {
   const storageRef = ref(
     FIREBASE_STORAGE,
@@ -119,4 +119,30 @@ export async function getCatchesFromFirestore(userId) {
   });
 
   return catches;
+}
+
+// Get all catches from all users
+export async function getAllUsersAndCatches() {
+  const usersCollection = collection(FIRESTORE_DB, "users");
+  const usersQuerySnapshot = await getDocs(usersCollection);
+
+  const combinedData = [];
+
+  await Promise.all(
+    usersQuerySnapshot.docs.map(async (userDoc) => {
+      const userData = userDoc.data();
+      const userId = userDoc.id;
+
+      const catchesCollection = collection(userDoc.ref, "catches");
+      const catchesQuerySnapshot = await getDocs(catchesCollection);
+
+      catchesQuerySnapshot.forEach((catchDoc) => {
+        const catchData = catchDoc.data();
+        const catchId = catchDoc.id;
+        combinedData.push({ userId, userData, catchId, catchData });
+      });
+    })
+  );
+
+  return combinedData;
 }

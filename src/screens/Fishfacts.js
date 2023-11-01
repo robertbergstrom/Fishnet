@@ -8,6 +8,7 @@ import {
   TextInput,
   StyleSheet,
   KeyboardAvoidingView,
+  Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
@@ -58,10 +59,10 @@ export default function FishList() {
     return (
       <TouchableOpacity onPress={() => Linking.openURL(item.url)}>
         <View style={styles.listItem}>
-          <Text>{item.name}</Text>
+          <Text style={{ color: "white" }}>{item.name}</Text>
           <View style={styles.wikiContainer}>
             <Text style={styles.wikiText}>Wiki</Text>
-            <Feather name="external-link" size={24} color="black" />
+            <Feather name="external-link" size={24} color="white" />
           </View>
         </View>
       </TouchableOpacity>
@@ -71,11 +72,15 @@ export default function FishList() {
   return (
     <View style={styles.container}>
       <StatusBar style="auto" />
+      <Image
+        src="https://firebasestorage.googleapis.com/v0/b/fishnet-348012.appspot.com/o/fishnetbackground2.jpg?alt=media&token=0d768446-5028-4754-8edd-7eca19961c0f&_gl=1*w89brk*_ga*MTEwMzY2NDk1NC4xNjk2NTgyOTgy*_ga_CW55HF8NVT*MTY5ODc0NzI4NS41Mi4xLjE2OTg3NDc4NTkuNjAuMC4w"
+        style={styles.backgroundImage}
+      />
       <FlatList
         data={fishData}
         renderItem={renderFishItem}
         keyExtractor={(item) => item.id.toString()}
-        style={{ marginTop: 40 }}
+        style={{ marginTop: 40, padding: 16 }}
       />
       <KeyboardAvoidingView behavior="padding">
         <View style={styles.searchBarContainer}>
@@ -102,11 +107,13 @@ export default function FishList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
   },
   searchBarContainer: {
     flexDirection: "row",
     alignItems: "center",
+    padding: 16,
+    borderTopWidth: 2,
+    borderColor: "#0782F9",
   },
   searchBarInputContainer: {
     flexDirection: "row",
@@ -115,7 +122,7 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 20,
     overflow: "hidden",
-    marginTop: 10,
+    backgroundColor: "white",
   },
   searchBarInput: {
     flex: 1,
@@ -124,7 +131,7 @@ const styles = StyleSheet.create({
   },
   listItem: {
     padding: 16,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: "#ccc",
     marginBottom: 10,
     borderRadius: 10,
@@ -145,5 +152,11 @@ const styles = StyleSheet.create({
   },
   wikiText: {
     fontWeight: "200",
+    color: "white",
+  },
+  backgroundImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
 });
