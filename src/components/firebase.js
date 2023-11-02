@@ -47,7 +47,6 @@ export { FIREBASE_APP, FIREBASE_AUTH };
 export const FIREBASE_STORAGE = getStorage(FIREBASE_APP);
 export const FIRESTORE_DB = getFirestore(FIREBASE_APP);
 
-// Storage functionality
 export async function uploadProfileImage(file, user, setLoading) {
   const imagesRef = ref(FIREBASE_STORAGE, "images/" + user.uid + ".png");
   await uploadBytes(imagesRef, file).then((snapshot) => {
@@ -121,7 +120,6 @@ export async function getCatchesFromFirestore(userId) {
   return catches;
 }
 
-// Get all catches from all users
 export async function getAllUsersAndCatches() {
   const usersCollection = collection(FIRESTORE_DB, "users");
   const usersQuerySnapshot = await getDocs(usersCollection);

@@ -35,10 +35,7 @@ function Map() {
         }}
       >
         {catches.map((item) => (
-          <Marker
-            key={item.catchId} // Use a unique identifier for the marker
-            coordinate={item.catchData.Location}
-          />
+          <Marker key={item.catchId} coordinate={item.catchData.Location} />
         ))}
       </MapView>
     </View>
